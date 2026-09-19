@@ -1,0 +1,104 @@
+{
+  "sessionId": "session-main",
+  "sessionTitle": "Heaney Movie Night",
+  "activeMovieIds": [
+    "star-wars",
+    "back-to-the-future",
+    "jurassic-park",
+    "edge-of-tomorrow",
+    "star-trek",
+    "galaxy-quest",
+    "men-in-black",
+    "stargate",
+    "independence-day",
+    "deep-impact",
+    "gladiator",
+    "troy",
+    "the-mummy",
+    "robin-hood-prince-of-thieves",
+    "dragonheart",
+    "the-bourne-identity",
+    "top-gun",
+    "rush-hour",
+    "con-air",
+    "bad-boys",
+    "x-men",
+    "spider-man",
+    "hellboy",
+    "the-dark-knight-rises",
+    "jaws",
+    "ghostbusters",
+    "the-lost-boys",
+    "tremors",
+    "raiders-of-the-lost-ark",
+    "jumanji",
+    "real-steel",
+    "titanic",
+    "twister",
+    "big-trouble-in-little-china",
+    "the-truman-show",
+    "stand-by-me",
+    "highlander"
+  ],
+  "activeGenres": [
+    "sci-fi",
+    "epic-adventure",
+    "action-thriller",
+    "superhero",
+    "horror-creature",
+    "adventure-family",
+    "disaster-spectacle",
+    "comedy-cult",
+    "drama-coming-of-age",
+    "cult-action"
+  ],
+  "voters": [
+    {
+      "id": "brian",
+      "name": "Brian",
+      "avatar": "🎬",
+      "color": "from-amber-500 to-orange-600"
+    },
+    {
+      "id": "suzi",
+      "name": "Suzi",
+      "avatar": "🍿",
+      "color": "from-pink-500 to-rose-600"
+    },
+    {
+      "id": "michelle",
+      "name": "Michelle",
+      "avatar": "🌟",
+      "color": "from-purple-500 to-indigo-600"
+    },
+    {
+      "id": "william",
+      "name": "William",
+      "avatar": "🥤",
+      "color": "from-blue-500 to-cyan-600"
+    },
+    {
+      "id": "aimee",
+      "name": "Aimee",
+      "avatar": "🎟️",
+      "color": "from-emerald-500 to-teal-600"
+    },
+    {
+      "id": "kimberley",
+      "name": "Kimberley",
+      "avatar": "🕶️",
+      "color": "from-fuchsia-500 to-pink-600"
+    },
+    {
+      "id": "liam",
+      "name": "Liam",
+      "avatar": "📽️",
+      "color": "from-red-500 to-amber-600"
+    }
+  ],
+  "ballots": {},
+  "status": "voting",
+  "winnerMovieId": null,
+  "createdAt": "2026-09-19T15:08:18.451Z",
+  "updatedAt": "2026-09-19T16:01:55.552Z"
+}
