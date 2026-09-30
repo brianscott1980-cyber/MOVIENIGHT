@@ -121,6 +121,9 @@ export function VoterProvider({
 
     connectSSE();
 
+    // Fetch initial session payload immediately via HTTP
+    refreshSession();
+
     // Safety fallback refresh every 8 seconds in case network temporarily drops SSE
     fallbackInterval = setInterval(refreshSession, 8000);
 

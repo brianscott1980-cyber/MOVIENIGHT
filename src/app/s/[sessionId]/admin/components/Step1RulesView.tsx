@@ -105,21 +105,6 @@ export function Step1RulesView({
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
-              onClick={() => setVoteWeightMode('equal')}
-              className={`p-3 min-h-[72px] rounded-xl text-xs font-bold border transition text-left flex flex-col justify-between gap-1 ${
-                voteWeightMode === 'equal'
-                  ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-sm'
-                  : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
-              }`}
-            >
-              <span className="flex items-center gap-1.5 text-sm">
-                <span>⚖️</span>
-                <span>Equal Weight</span>
-              </span>
-              <span className="text-[10px] opacity-80">All votes count the same regardless of order picked</span>
-            </button>
-            <button
-              type="button"
               onClick={() => setVoteWeightMode('ranked')}
               className={`p-3 min-h-[72px] rounded-xl text-xs font-bold border transition text-left flex flex-col justify-between gap-1 ${
                 voteWeightMode === 'ranked'
@@ -132,6 +117,21 @@ export function Step1RulesView({
                 <span>Ranked Choice</span>
               </span>
               <span className="text-[10px] opacity-80">First pick counts more than second on a tie</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setVoteWeightMode('equal')}
+              className={`p-3 min-h-[72px] rounded-xl text-xs font-bold border transition text-left flex flex-col justify-between gap-1 ${
+                voteWeightMode === 'equal'
+                  ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-sm'
+                  : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
+              }`}
+            >
+              <span className="flex items-center gap-1.5 text-sm">
+                <span>⚖️</span>
+                <span>Equal Weight</span>
+              </span>
+              <span className="text-[10px] opacity-80">All votes count the same regardless of order picked</span>
             </button>
           </div>
         </div>

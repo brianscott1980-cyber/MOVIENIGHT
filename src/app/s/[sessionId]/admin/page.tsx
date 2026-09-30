@@ -38,7 +38,7 @@ export default function SessionAdminPage() {
   // Step 1: Session Naming & General Rules
   const [sessionTitle, setSessionTitle] = useState('');
   const [deadlockRule, setDeadlockRule] = useState<DeadlockRule>('random');
-  const [voteWeightMode, setVoteWeightMode] = useState<'equal' | 'ranked'>('equal');
+  const [voteWeightMode, setVoteWeightMode] = useState<'equal' | 'ranked'>('ranked');
   const [isPublic, setIsPublic] = useState<boolean>(true);
 
   // Step 2: Voters & Voting Rules
@@ -91,7 +91,7 @@ export default function SessionAdminPage() {
       setMaxVotesPerVoter(sessionData.session.maxVotesPerVoter ?? 3);
       setIsPublic(sessionData.session.isPublic ?? true);
       setDeadlockRule(sessionData.session.deadlockRule || 'random');
-      setVoteWeightMode(sessionData.session.voteWeightMode || 'equal');
+      setVoteWeightMode(sessionData.session.voteWeightMode || 'ranked');
       setAgeRatingLimit(sessionData.session.ageRatingLimit || 'ALL');
       setAllowedSources((sessionData.session.streamingFilter || []).map((source) => STREAMING_PLATFORMS.find((p) => p.name === source || p.id === source)?.id || source));
       setMovieAdditionMode(sessionData.session.movieAdditionMode || 'voter_suggestions');

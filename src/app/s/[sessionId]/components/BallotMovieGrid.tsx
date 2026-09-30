@@ -12,6 +12,7 @@ interface BallotMovieGridProps {
   filteredMovies: Movie[];
   onOpenDetails: (movie: Movie, autoPlay?: boolean) => void;
   onResetFilters: () => void;
+  isLoading?: boolean;
 }
 
 export function BallotMovieGrid({
@@ -20,7 +21,22 @@ export function BallotMovieGrid({
   filteredMovies,
   onOpenDetails,
   onResetFilters,
+  isLoading = false,
 }: BallotMovieGridProps) {
+  if (isLoading && filteredMovies.length === 0) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6 animate-pulse">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="bg-slate-900/60 rounded-3xl border border-slate-800 p-4 space-y-3">
+            <div className="w-full aspect-[2/3] bg-slate-800/80 rounded-2xl" />
+            <div className="h-4 bg-slate-800 rounded-md w-3/4" />
+            <div className="h-3 bg-slate-800/60 rounded-md w-1/2" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   if (activeCount === 0) {
     return (
       <div className="text-center py-20 bg-slate-900/40 rounded-3xl border border-slate-800 p-8 max-w-lg mx-auto">

@@ -101,7 +101,8 @@ export async function ensureDbInitialized(): Promise<void> {
     ALTER TABLE sessions ADD COLUMN IF NOT EXISTS ai_movie_ids TEXT[] DEFAULT '{}';
     ALTER TABLE sessions ALTER COLUMN movie_addition_mode SET DEFAULT 'voter_suggestions';
     ALTER TABLE sessions ALTER COLUMN max_suggestions_per_voter SET DEFAULT 2;
-    ALTER TABLE sessions ADD COLUMN IF NOT EXISTS vote_weight_mode TEXT DEFAULT 'equal';
+    ALTER TABLE sessions ADD COLUMN IF NOT EXISTS vote_weight_mode TEXT DEFAULT 'ranked';
+    ALTER TABLE sessions ALTER COLUMN vote_weight_mode SET DEFAULT 'ranked';
 
     CREATE TABLE IF NOT EXISTS voters (
       id TEXT PRIMARY KEY,
@@ -178,10 +179,26 @@ export async function ensureDbInitialized(): Promise<void> {
   global.__movieNightDbInitialized = true;
 }
 
+let cachedCatalogue: Movie[] | null = null;
+let cachedCatalogueTime = 0;
+const CATALOGUE_CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
+
 /** Shared catalogue stored in Supabase PostgreSQL. Run db:migrate:movies before deployment. */
 export async function getCatalogueMovies(): Promise<Movie[]> {
+  const now = Date.now();
+  if (cachedCatalogue && now - cachedCatalogueTime < CATALOGUE_CACHE_TTL) {
+    return cachedCatalogue;
+  }
+
   const result = await getPool().query<{ data: Movie }>('SELECT data FROM public.movies ORDER BY title, id');
-  return result.rows.map((row) => row.data);
+  cachedCatalogue = result.rows.map((row) => row.data);
+  cachedCatalogueTime = now;
+  return cachedCatalogue;
+}
+
+export function invalidateCatalogueCache(): void {
+  cachedCatalogue = null;
+  cachedCatalogueTime = 0;
 }
 
 /**
@@ -813,7 +830,7 @@ export async function computeSessionResponseFromDB(rawSessionId?: string): Promi
     maxVotesPerVoter: sessionRow.max_votes_per_voter ?? 3,
     isPublic: sessionRow.is_public ?? true,
     deadlockRule: sessionRow.deadlock_rule || 'random',
-    voteWeightMode: (sessionRow as any).vote_weight_mode || 'equal',
+    voteWeightMode: (sessionRow as any).vote_weight_mode || 'ranked',
     ageRatingLimit: sessionRow.age_rating_limit || 'ALL',
     yearFilter: sessionRow.year_filter || 'ALL',
     minYear: sessionRow.min_year ?? null,

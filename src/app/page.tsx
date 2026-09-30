@@ -78,14 +78,24 @@ export default function ExploreSessionsPage() {
   type FilterTab = 'all' | 'hosts' | 'locked' | 'setup';
   const [filterTab, setFilterTab] = useState<FilterTab>('hosts');
 
-  // Update default tab based on login state
+  // Update default tab based on login state and whether user has hosted sessions
   useEffect(() => {
     if (user) {
-      setFilterTab((current) => (current === 'all' ? 'hosts' : current));
+      const hasHostedSessions = sessions.some((s) => {
+        if (s.creator?.userId && s.creator.userId === user.id) return true;
+        if (userEmail && s.creator?.email && s.creator.email.toLowerCase() === userEmail.toLowerCase()) return true;
+        return false;
+      });
+
+      if (!hasHostedSessions) {
+        setFilterTab('all');
+      } else {
+        setFilterTab((current) => (current === 'all' ? 'hosts' : current));
+      }
     } else {
       setFilterTab((current) => (current === 'hosts' || current === 'setup' ? 'all' : current));
     }
-  }, [user]);
+  }, [user, userEmail, sessions]);
 
   // Quick Join by Code
   const [joinCodeInput, setJoinCodeInput] = useState('');

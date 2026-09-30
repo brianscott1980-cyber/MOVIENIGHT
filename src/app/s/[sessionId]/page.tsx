@@ -19,7 +19,7 @@ import { BallotMovieGrid } from './components/BallotMovieGrid';
 
 export default function SessionVotingPage() {
   const router = useRouter();
-  const { sessionId, sessionData, votedMovieIds, refreshSession, currentVoter, openPicker } = useVoter();
+  const { sessionId, sessionData, votedMovieIds, refreshSession, currentVoter, openPicker, isLoading } = useVoter();
   const { user, userEmail } = useAuth();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -397,6 +397,7 @@ export default function SessionVotingPage() {
           sessionId={sessionId}
           activeCount={activeIds.length}
           filteredMovies={filteredMovies}
+          isLoading={isLoading}
           onOpenDetails={handleOpenDetails}
           onResetFilters={() => {
             setSearchQuery('');
