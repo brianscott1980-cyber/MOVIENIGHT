@@ -5,6 +5,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { trackCreateSession } from '@/lib/analytics';
 import {
   Film,
   Sparkles,
@@ -269,6 +270,10 @@ export default function ExploreSessionsPage() {
       if (res.ok) {
         const json = await res.json();
         setIsCreateModalOpen(false);
+        trackCreateSession({
+          sessionId: json.session.sessionId,
+          sessionTitle: newTitle.trim(),
+        });
         router.push(`/s/${json.session.sessionId}/admin`);
       }
     } catch (err) {
