@@ -92,6 +92,7 @@ export interface MovieScore {
 
 export type SessionStatus = 'setup' | 'voting' | 'paused' | 'locked';
 export type DeadlockRule = 'random' | 'runoff' | 'revote';
+export type VoteWeightMode = 'equal' | 'ranked';
 export type AgeRatingLimit = 'ALL' | 'U/G' | 'PG' | '12/PG-13' | '15/R' | '18/NC-17' | string;
 
 export interface SessionConfig {
@@ -111,6 +112,7 @@ export interface SessionConfig {
   maxVotesPerVoter: number; // default = 3 (0 = unlimited)
   isPublic: boolean; // true = public live podium, false = secret ballot until locked
   deadlockRule: DeadlockRule; // 'random' | 'revote'
+  voteWeightMode: VoteWeightMode; // 'equal' = all votes same weight, 'ranked' = first choice breaks ties
   ageRatingLimit: string; // 'ALL', 'U', 'PG', '12', '15', '18', 'G', 'PG-13', 'R'
   yearFilter: string; // 'ALL', '80s', '90s', '2000s', 'custom'
   minYear?: number | null;

@@ -38,6 +38,7 @@ export default function SessionAdminPage() {
   // Step 1: Session Naming & General Rules
   const [sessionTitle, setSessionTitle] = useState('');
   const [deadlockRule, setDeadlockRule] = useState<DeadlockRule>('random');
+  const [voteWeightMode, setVoteWeightMode] = useState<'equal' | 'ranked'>('equal');
   const [isPublic, setIsPublic] = useState<boolean>(true);
 
   // Step 2: Voters & Voting Rules
@@ -90,6 +91,7 @@ export default function SessionAdminPage() {
       setMaxVotesPerVoter(sessionData.session.maxVotesPerVoter ?? 3);
       setIsPublic(sessionData.session.isPublic ?? true);
       setDeadlockRule(sessionData.session.deadlockRule || 'random');
+      setVoteWeightMode(sessionData.session.voteWeightMode || 'equal');
       setAgeRatingLimit(sessionData.session.ageRatingLimit || 'ALL');
       setAllowedSources((sessionData.session.streamingFilter || []).map((source) => STREAMING_PLATFORMS.find((p) => p.name === source || p.id === source)?.id || source));
       setMovieAdditionMode(sessionData.session.movieAdditionMode || 'voter_suggestions');
@@ -342,6 +344,7 @@ export default function SessionAdminPage() {
           maxVotesPerVoter,
           isPublic,
           deadlockRule,
+          voteWeightMode,
           ageRatingLimit,
           streamingFilter: allowedSources,
           movieAdditionMode,
@@ -706,6 +709,8 @@ export default function SessionAdminPage() {
             setSessionTitle={setSessionTitle}
             deadlockRule={deadlockRule}
             setDeadlockRule={setDeadlockRule}
+            voteWeightMode={voteWeightMode}
+            setVoteWeightMode={setVoteWeightMode}
             isPublic={isPublic}
             setIsPublic={setIsPublic}
           />
@@ -811,18 +816,6 @@ export default function SessionAdminPage() {
             onToggleQuickPreset={toggleQuickPreset}
             onOpenCustomModal={() => setIsCustomModalOpen(true)}
             onJumpToStep3={() => setCurrentStep(3)}
-
-            sessionTitle={sessionTitle}
-            maxVotesPerVoter={maxVotesPerVoter}
-            deadlockRule={deadlockRule}
-            movieAdditionMode={movieAdditionMode}
-            maxSuggestionsPerVoter={maxSuggestionsPerVoter}
-            voters={voters}
-            isSaving={isSaving}
-            isLaunching={isLaunching}
-            isReadyToStart={isReadyToStart}
-            onSaveConfig={handleSaveConfig}
-            onLaunchSession={handleLaunchSession}
           />
         )}
       </main>

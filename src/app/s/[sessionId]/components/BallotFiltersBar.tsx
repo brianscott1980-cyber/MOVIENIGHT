@@ -99,7 +99,11 @@ export function BallotFiltersBar({
               type="button"
               onClick={() => currentVoter ? onOpenSuggestModal() : onOpenPicker()}
               disabled={suggestionLimitReached}
-              className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-extrabold transition shadow-md active:scale-95 shrink-0"
+              className={`inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-extrabold transition shadow-md active:scale-95 shrink-0 ${
+                suggestionLimitReached
+                  ? 'bg-slate-800 text-slate-500 border border-slate-700 opacity-50 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white'
+              }`}
               aria-label={suggestionLimit > 0 && currentVoter ? `Suggest movie — ${suggestionsRemaining} suggestions remaining` : "Suggest movie"}
               title={suggestionLimitReached ? "You have used all your movie suggestions" : "Suggest a custom movie for tonight"}
             >

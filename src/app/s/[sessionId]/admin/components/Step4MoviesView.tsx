@@ -8,11 +8,9 @@ import {
   CheckSquare,
   Square,
   AlertTriangle,
-  CheckCircle2,
-  Rocket,
   Loader2,
 } from 'lucide-react';
-import { Movie, AgeRatingLimit, DeadlockRule, Voter } from '@/types';
+import { Movie, AgeRatingLimit } from '@/types';
 import { QUICK_IDEAS_PRESETS } from '@/data/moviesData';
 import { getMovieCriteriaWarnings } from '@/lib/movieFilters';
 
@@ -46,19 +44,8 @@ interface Step4MoviesViewProps {
   onOpenCustomModal: () => void;
   onJumpToStep3: () => void;
 
-  // Summary & Launch
-  sessionTitle: string;
-  maxVotesPerVoter: number;
-  deadlockRule: DeadlockRule;
-  movieAdditionMode: 'admin_only' | 'voter_suggestions';
-  maxSuggestionsPerVoter: number;
-  voters: Voter[];
-  isSaving: boolean;
-  isLaunching: boolean;
-  isReadyToStart: boolean;
+  // Setup mode flag
   isSetupMode?: boolean;
-  onSaveConfig: () => void;
-  onLaunchSession: () => void;
 }
 
 export function Step4MoviesView({
@@ -88,18 +75,7 @@ export function Step4MoviesView({
   onOpenCustomModal,
   onJumpToStep3,
 
-  sessionTitle,
-  maxVotesPerVoter,
-  deadlockRule,
-  movieAdditionMode,
-  maxSuggestionsPerVoter,
-  voters,
-  isSaving,
-  isLaunching,
-  isReadyToStart,
   isSetupMode = true,
-  onSaveConfig,
-  onLaunchSession,
 }: Step4MoviesViewProps) {
   return (
     <div className="space-y-6 animate-fadeIn">
@@ -404,98 +380,6 @@ export function Step4MoviesView({
           </div>
         )}
       </div>
-
-      {/* Launch & Final Review Summary Card (Setup Mode Only) */}
-      {isSetupMode && (
-        <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 border-2 border-amber-500/40 shadow-2xl space-y-4">
-          <div className="flex items-center gap-2.5 border-b border-slate-800 pb-3">
-            <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-            <h3 className="text-base font-black text-white">
-              Ready to Launch Movie Night
-            </h3>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-            <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800">
-              <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-bold">
-                Session Title
-              </span>
-              <span className="text-white font-bold block truncate mt-0.5">
-                {sessionTitle}
-              </span>
-            </div>
-
-            <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800">
-              <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-bold">
-                Voting Rules
-              </span>
-              <span className="text-white font-bold block mt-0.5">
-                {maxVotesPerVoter === 0 ? 'Unlimited' : `${maxVotesPerVoter} votes`} &bull; {deadlockRule}
-              </span>
-            </div>
-
-            <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800">
-              <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-bold">
-                Participant Adds
-              </span>
-              <span className="text-white font-bold block mt-0.5">
-                {movieAdditionMode === 'admin_only'
-                  ? 'Host Only'
-                  : maxSuggestionsPerVoter === 0
-                  ? 'Unlimited'
-                  : `${maxSuggestionsPerVoter} per person`}
-              </span>
-            </div>
-
-            <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800">
-              <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-bold">
-                Lineup &amp; Voters
-              </span>
-              <span className="text-amber-400 font-bold block mt-0.5">
-                {selectedMovieIds.length} Movies &bull; {voters.length} Voters
-              </span>
-            </div>
-          </div>
-
-          <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="text-xs text-slate-400 text-center sm:text-left">
-              Clicking <strong>Start Voting</strong> makes the 8-digit session ID live for everyone to join and cast ballots.
-            </p>
-
-            <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
-              <button
-                type="button"
-                onClick={onSaveConfig}
-                disabled={isSaving}
-                className="px-4 py-2.5 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition"
-              >
-                {isSaving ? 'Saving...' : 'Save Draft'}
-              </button>
-
-              <button
-                type="button"
-                onClick={onLaunchSession}
-                disabled={!isReadyToStart || isLaunching}
-                title={
-                  !isReadyToStart
-                    ? selectedMovieIds.length === 0
-                      ? 'Select at least 1 movie from the lineup above to start voting'
-                      : 'Session title is required'
-                    : 'Start voting now'
-                }
-                className={`px-6 py-2.5 rounded-xl text-xs font-black transition shadow-lg flex items-center justify-center gap-2 active:scale-95 ${
-                  isReadyToStart
-                    ? 'bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 glow-cyan cursor-pointer'
-                    : 'bg-slate-800 text-slate-500 border border-slate-700 opacity-50 cursor-not-allowed'
-                }`}
-              >
-                <Rocket className="w-4 h-4 stroke-[2.5]" />
-                <span>{isLaunching ? 'Starting...' : '🚀 Start Voting'}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

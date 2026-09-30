@@ -2,13 +2,15 @@
 
 import React from 'react';
 import { Shield, Eye, EyeOff } from 'lucide-react';
-import { DeadlockRule } from '@/types';
+import { DeadlockRule, VoteWeightMode } from '@/types';
 
 interface Step1RulesViewProps {
   sessionTitle: string;
   setSessionTitle: (title: string) => void;
   deadlockRule: DeadlockRule;
   setDeadlockRule: (rule: DeadlockRule) => void;
+  voteWeightMode: VoteWeightMode;
+  setVoteWeightMode: (mode: VoteWeightMode) => void;
   isPublic: boolean;
   setIsPublic: (isPub: boolean) => void;
 }
@@ -18,6 +20,8 @@ export function Step1RulesView({
   setSessionTitle,
   deadlockRule,
   setDeadlockRule,
+  voteWeightMode,
+  setVoteWeightMode,
   isPublic,
   setIsPublic,
 }: Step1RulesViewProps) {
@@ -26,7 +30,7 @@ export function Step1RulesView({
       <div className="border-b border-slate-800 pb-4">
         <h2 className="text-lg font-black text-white flex items-center gap-2">
           <Shield className="w-5 h-5 text-amber-400" />
-          <span>Step 1: Session Naming & Event Rules</span>
+          <span>Step 1: Session Naming &amp; Event Rules</span>
         </h2>
         <p className="text-xs text-slate-400 mt-0.5">
           Set up the event title, tie-breaker handling, and ballot privacy for this movie night.
@@ -90,10 +94,52 @@ export function Step1RulesView({
           </div>
         </div>
 
-        {/* Ballot Visibility & Listing (Public vs Private) */}
+        {/* Voting Order / Vote Weight Rules */}
         <div>
           <label className="block text-xs font-bold text-slate-300 mb-1.5">
-            Ballot Privacy & Visibility
+            Voting Order Rules
+          </label>
+          <p className="text-[11px] text-slate-400 mb-2">
+            Whether the order a voter picks movies matters for tie-breaking:
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setVoteWeightMode('equal')}
+              className={`p-3 min-h-[72px] rounded-xl text-xs font-bold border transition text-left flex flex-col justify-between gap-1 ${
+                voteWeightMode === 'equal'
+                  ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-sm'
+                  : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
+              }`}
+            >
+              <span className="flex items-center gap-1.5 text-sm">
+                <span>⚖️</span>
+                <span>Equal Weight</span>
+              </span>
+              <span className="text-[10px] opacity-80">All votes count the same regardless of order picked</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setVoteWeightMode('ranked')}
+              className={`p-3 min-h-[72px] rounded-xl text-xs font-bold border transition text-left flex flex-col justify-between gap-1 ${
+                voteWeightMode === 'ranked'
+                  ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-sm'
+                  : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
+              }`}
+            >
+              <span className="flex items-center gap-1.5 text-sm">
+                <span>🥇</span>
+                <span>Ranked Choice</span>
+              </span>
+              <span className="text-[10px] opacity-80">First pick counts more than second on a tie</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Ballot Visibility & Listing (Public vs Private) */}
+        <div className="md:col-span-2">
+          <label className="block text-xs font-bold text-slate-300 mb-1.5">
+            Ballot Privacy &amp; Visibility
           </label>
           <p className="text-[11px] text-slate-400 mb-2">
             Whether this session is listed on the homepage for anyone or invite-only:

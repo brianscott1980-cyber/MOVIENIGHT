@@ -101,6 +101,7 @@ export async function ensureDbInitialized(): Promise<void> {
     ALTER TABLE sessions ADD COLUMN IF NOT EXISTS ai_movie_ids TEXT[] DEFAULT '{}';
     ALTER TABLE sessions ALTER COLUMN movie_addition_mode SET DEFAULT 'voter_suggestions';
     ALTER TABLE sessions ALTER COLUMN max_suggestions_per_voter SET DEFAULT 2;
+    ALTER TABLE sessions ADD COLUMN IF NOT EXISTS vote_weight_mode TEXT DEFAULT 'equal';
 
     CREATE TABLE IF NOT EXISTS voters (
       id TEXT PRIMARY KEY,
@@ -812,6 +813,7 @@ export async function computeSessionResponseFromDB(rawSessionId?: string): Promi
     maxVotesPerVoter: sessionRow.max_votes_per_voter ?? 3,
     isPublic: sessionRow.is_public ?? true,
     deadlockRule: sessionRow.deadlock_rule || 'random',
+    voteWeightMode: (sessionRow as any).vote_weight_mode || 'equal',
     ageRatingLimit: sessionRow.age_rating_limit || 'ALL',
     yearFilter: sessionRow.year_filter || 'ALL',
     minYear: sessionRow.min_year ?? null,
@@ -1180,6 +1182,10 @@ export async function updateSessionConfigInDB(
     if (updates.deadlockRule !== undefined) {
       sessionUpdates.push(`deadlock_rule = $${paramIdx++}`);
       values.push(updates.deadlockRule);
+    }
+    if ((updates as any).voteWeightMode !== undefined) {
+      sessionUpdates.push(`vote_weight_mode = $${paramIdx++}`);
+      values.push((updates as any).voteWeightMode);
     }
     if (updates.ageRatingLimit !== undefined) {
       sessionUpdates.push(`age_rating_limit = $${paramIdx++}`);
