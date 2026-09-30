@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { Voter, SessionResponse, Ballot } from '@/types';
 import { DEFAULT_VOTERS } from '@/data/moviesData';
 import { useAuth } from '@/context/AuthContext';
+import { trackVote } from '@/lib/analytics';
 
 interface VoterContextType {
   sessionId: string;
@@ -544,6 +545,17 @@ export function VoterProvider({
         const updatedData: SessionResponse = await res.json();
         setSessionData(updatedData);
         setVotedMovieIds(updatedData?.session?.ballots?.[voter.id]?.movieIds || []);
+
+        const moviesList = updatedData?.allAvailableMovies || sessionData?.allAvailableMovies || [];
+        const movieObj = moviesList.find((m) => m.id === movieId);
+        trackVote({
+          sessionId,
+          movieId,
+          movieTitle: movieObj?.title,
+          action: removingVote ? 'unvote' : 'vote',
+          voterName: voter.name,
+        });
+
         return true;
       }
       setVotedMovieIds(previousVotes);

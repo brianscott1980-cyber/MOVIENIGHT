@@ -13,6 +13,11 @@ import {
 import { matchesMovieCriteria, getSetupMovieChoices } from '@/lib/movieFilters';
 import { Voter, Movie, AgeRatingLimit, DeadlockRule } from '@/types';
 import { AddCustomMovieModal } from '@/components/AddCustomMovieModal';
+import {
+  trackSettingsChange,
+  trackAdminAction,
+  trackAiGenerate,
+} from '@/lib/analytics';
 
 // Sub-screen views
 import { AdminHeader } from './components/AdminHeader';
@@ -376,6 +381,16 @@ export default function SessionAdminPage() {
 
       if (res.ok) {
         setSaveSuccess(true);
+        trackSettingsChange({
+          sessionId,
+          sessionTitle,
+          voteWeightMode,
+          deadlockRule,
+          maxVotesPerVoter,
+          movieAdditionMode,
+          selectedMovieCount: selectedMovieIds.length,
+          voterCount: voters.length,
+        });
         await refreshSession();
         setTimeout(() => setSaveSuccess(false), 3000);
       }
@@ -436,6 +451,12 @@ export default function SessionAdminPage() {
       });
 
       if (res.ok) {
+        trackAdminAction({
+          sessionId,
+          action: 'launch',
+          sessionTitle: launchTitle,
+          movieCount: selectedMovieIds.length,
+        });
         await refreshSession();
         router.push(`/s/${sessionId}`);
       }
@@ -459,6 +480,7 @@ export default function SessionAdminPage() {
         }),
       });
       if (res.ok) {
+        trackAdminAction({ sessionId, action: 'pause' });
         await refreshSession();
       }
     } catch (err) {
@@ -479,6 +501,7 @@ export default function SessionAdminPage() {
         }),
       });
       if (res.ok) {
+        trackAdminAction({ sessionId, action: 'resume' });
         await refreshSession();
       }
     } catch (err) {
@@ -503,6 +526,11 @@ export default function SessionAdminPage() {
         }),
       });
       if (res.ok) {
+        trackAdminAction({
+          sessionId,
+          action: 'close',
+          sessionTitle,
+        });
         await refreshSession();
       }
     } catch (err) {
@@ -526,6 +554,7 @@ export default function SessionAdminPage() {
         }),
       });
       if (res.ok) {
+        trackAdminAction({ sessionId, action: 'reopen', sessionTitle });
         await refreshSession();
       }
     } catch (err) {
@@ -562,6 +591,13 @@ export default function SessionAdminPage() {
 
       const newIds: string[] = data.movieIds || [];
       const newMovies: Movie[] = data.movies || [];
+
+      trackAiGenerate({
+        sessionId,
+        prompt: aiPrompt.trim(),
+        count: aiMovieCount,
+        resultsCount: newIds.length,
+      });
 
       if (newMovies.length > 0) {
         setAiCustomMovies((prev) => {
@@ -601,6 +637,7 @@ export default function SessionAdminPage() {
         }),
       });
       if (res.ok) {
+        trackAdminAction({ sessionId, action: 'delete_session', sessionTitle });
         router.push('/');
       }
     } catch (err) {
@@ -625,6 +662,7 @@ export default function SessionAdminPage() {
         }),
       });
       if (res.ok) {
+        trackAdminAction({ sessionId, action: 'reset_votes' });
         await refreshSession();
         alert('All ballots have been cleared!');
       }

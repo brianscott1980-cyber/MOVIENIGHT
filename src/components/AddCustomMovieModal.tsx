@@ -5,6 +5,7 @@ import { X, Film, Plus, Image as ImageIcon, Video, Check, Search, Loader2, Star 
 import { CustomMovieInput, Movie } from '@/types';
 import { STREAMING_NAMES, STREAMING_PLATFORMS, GENRE_INFO } from '@/data/moviesData';
 import type { TmdbSearchResult } from '@/lib/tmdb';
+import { trackAddMovie } from '@/lib/analytics';
 
 interface Props {
   isOpen: boolean;
@@ -112,6 +113,17 @@ function MovieForm({ onClose, onMovieAdded, sessionId, addedByVoterId }: Props) 
       const res = await fetch('/api/session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId, action: 'add-custom-movie', movie: { ...payload, addedByVoterId } }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Could not add movie.');
+
+      trackAddMovie({
+        sessionId,
+        movieId: data.movie?.id,
+        movieTitle: data.movie?.title || payload.title,
+        year: data.movie?.year || payload.year,
+        genre: data.movie?.genre || payload.genre,
+        isManual: manual,
+        addedByVoterId,
+      });
+
       onMovieAdded(data.movie); onClose();
     } catch (err) { setError(err instanceof Error ? err.message : 'Could not add movie.'); }
     finally { setIsSubmitting(false); }

@@ -8,6 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Movie } from '@/types';
 import { MovieDetailModal } from '@/components/MovieDetailModal';
 import { AddCustomMovieModal } from '@/components/AddCustomMovieModal';
+import { trackAdminAction } from '@/lib/analytics';
 
 // Sub-screen views
 import { BallotWaitingRoom } from './components/BallotWaitingRoom';
@@ -120,6 +121,12 @@ export default function SessionVotingPage() {
         }),
       });
       if (res.ok) {
+        trackAdminAction({
+          sessionId,
+          action: 'launch',
+          sessionTitle: sessionData?.session?.sessionTitle,
+          movieCount: sessionData?.session?.activeMovieIds?.length,
+        });
         await refreshSession();
       }
     } catch (err) {
@@ -143,6 +150,7 @@ export default function SessionVotingPage() {
         }),
       });
       if (res.ok) {
+        trackAdminAction({ sessionId, action: 'pause' });
         await refreshSession();
       }
     } catch (err) {
@@ -166,6 +174,7 @@ export default function SessionVotingPage() {
         }),
       });
       if (res.ok) {
+        trackAdminAction({ sessionId, action: 'resume' });
         await refreshSession();
       }
     } catch (err) {
@@ -192,6 +201,11 @@ export default function SessionVotingPage() {
         }),
       });
       if (res.ok) {
+        trackAdminAction({
+          sessionId,
+          action: 'close',
+          sessionTitle: sessionData?.session?.sessionTitle,
+        });
         await refreshSession();
       }
     } catch (err) {
@@ -215,6 +229,11 @@ export default function SessionVotingPage() {
         }),
       });
       if (res.ok) {
+        trackAdminAction({
+          sessionId,
+          action: 'reopen',
+          sessionTitle: sessionData?.session?.sessionTitle,
+        });
         await refreshSession();
       }
     } catch (err) {
@@ -239,6 +258,11 @@ export default function SessionVotingPage() {
         }),
       });
       if (res.ok) {
+        trackAdminAction({
+          sessionId,
+          action: 'delete_session',
+          sessionTitle: sessionData?.session?.sessionTitle,
+        });
         router.replace('/');
       }
     } catch (err) {
