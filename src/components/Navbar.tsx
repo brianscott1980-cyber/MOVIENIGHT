@@ -107,8 +107,8 @@ export function Navbar() {
                     <span className="text-xs font-bold text-white max-w-[80px] sm:max-w-[120px] truncate leading-tight">
                       {currentVoter.name}
                     </span>
-                    <span className="text-[9px] text-amber-400/80 leading-none">
-                      {user ? 'Google' : 'Guest'}
+                    <span className="text-[9px] text-amber-400/80 leading-none capitalize">
+                      {user ? (user.app_metadata?.provider || 'Member') : 'Guest'}
                     </span>
                   </div>
                 </div>
