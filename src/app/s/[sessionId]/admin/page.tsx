@@ -143,22 +143,34 @@ export default function SessionAdminPage() {
   // Available movies from database
   const allMovies: Movie[] = useMemo(() => {
     const list = sessionData?.allAvailableMovies || [];
-    if (aiCustomMovies.length > 0) {
-      const existing = new Set(list.map((m) => m.id));
-      const extras = aiCustomMovies.filter((m) => !existing.has(m.id));
-      return [...list, ...extras];
+    const seen = new Set<string>();
+    const deduplicated: Movie[] = [];
+    for (const m of list) {
+      if (!seen.has(m.id)) {
+        seen.add(m.id);
+        deduplicated.push(m);
+      }
     }
-    return list;
+    if (aiCustomMovies.length > 0) {
+      for (const m of aiCustomMovies) {
+        if (!seen.has(m.id)) {
+          seen.add(m.id);
+          deduplicated.push(m);
+        }
+      }
+    }
+    return deduplicated;
   }, [sessionData, aiCustomMovies]);
 
   // Determine effective AI movie IDs (from active state or persisted session metadata)
   const effectiveAiMovieIds = useMemo(() => {
     if (hasResetToCatalogue) return null;
-    if (aiLookupMovieIds && aiLookupMovieIds.length > 0) return aiLookupMovieIds;
-    if (sessionData?.session?.isAiCurated && sessionData.session.aiMovieIds && sessionData.session.aiMovieIds.length > 0) {
-      return sessionData.session.aiMovieIds;
+    let ids: string[] | null = null;
+    if (aiLookupMovieIds && aiLookupMovieIds.length > 0) ids = aiLookupMovieIds;
+    else if (sessionData?.session?.isAiCurated && sessionData.session.aiMovieIds && sessionData.session.aiMovieIds.length > 0) {
+      ids = sessionData.session.aiMovieIds;
     }
-    return null;
+    return ids ? Array.from(new Set(ids)) : null;
   }, [hasResetToCatalogue, aiLookupMovieIds, sessionData?.session?.isAiCurated, sessionData?.session?.aiMovieIds]);
 
   const isAiCuratedMode = Boolean(effectiveAiMovieIds && effectiveAiMovieIds.length > 0);
@@ -171,9 +183,16 @@ export default function SessionAdminPage() {
   const setupMovieChoices = useMemo(() => {
     if (effectiveAiMovieIds !== null) {
       const movieMap = new Map(allMovies.map((m) => [m.id, m]));
-      return effectiveAiMovieIds
-        .map((id) => movieMap.get(id))
-        .filter((m): m is Movie => Boolean(m));
+      const seen = new Set<string>();
+      const list: Movie[] = [];
+      for (const id of effectiveAiMovieIds) {
+        const m = movieMap.get(id);
+        if (m && !seen.has(m.id)) {
+          seen.add(m.id);
+          list.push(m);
+        }
+      }
+      return list;
     }
     return getSetupMovieChoices(allMovies, allowedSources, allowedGenres, ageRatingLimit);
   }, [effectiveAiMovieIds, allMovies, allowedSources, allowedGenres, ageRatingLimit]);
@@ -368,16 +387,13 @@ export default function SessionAdminPage() {
   };
 
   const handleLaunchSession = async () => {
-    if (!sessionTitle.trim()) {
-      alert('Please enter a session title in Step 1 before starting voting.');
-      setCurrentStep(1);
-      return;
-    }
     if (selectedMovieIds.length === 0) {
-      alert('You must select at least 1 movie in Step 4 before starting voting.');
+      alert('You must select at least 1 movie before starting voting.');
       setCurrentStep(4);
       return;
     }
+
+    const launchTitle = sessionTitle.trim() || sessionData?.session?.sessionTitle?.trim() || `Movie Night #${sessionId}`;
 
     setIsLaunching(true);
     try {
@@ -389,7 +405,7 @@ export default function SessionAdminPage() {
           action: 'update-config',
           hostUserId: user?.id || null,
           hostEmail: userEmail || null,
-          sessionTitle,
+          sessionTitle: launchTitle,
           activeMovieIds: selectedMovieIds,
           activeGenres: allowedGenres,
           genreFilter: allowedGenres,
@@ -657,7 +673,8 @@ export default function SessionAdminPage() {
   const isVotingLive = sessionData?.session?.status === 'voting';
   const isPaused = sessionData?.session?.status === 'paused';
   const isLocked = sessionData?.session?.status === 'locked';
-  const isReadyToStart = Boolean(sessionTitle.trim().length > 0 && selectedMovieIds.length > 0);
+  const effectiveTitle = sessionTitle.trim() || sessionData?.session?.sessionTitle?.trim() || `Movie Night #${sessionId}`;
+  const isReadyToStart = selectedMovieIds.length > 0;
 
   return (
     <div className="min-h-screen pb-28 text-slate-100 bg-[#080b12]">
@@ -810,8 +827,6 @@ export default function SessionAdminPage() {
             ageRatingLimit={ageRatingLimit}
 
             onToggleMovie={toggleMovie}
-            onSelectAllVisibleMovies={selectAllVisibleMovies}
-            onDeselectAllVisibleMovies={deselectAllVisibleMovies}
             onClearAllSelectedMovies={clearAllSelectedMovies}
             onToggleQuickPreset={toggleQuickPreset}
             onOpenCustomModal={() => setIsCustomModalOpen(true)}

@@ -37,8 +37,6 @@ interface Step4MoviesViewProps {
 
   // Handlers
   onToggleMovie: (id: string) => void;
-  onSelectAllVisibleMovies: () => void;
-  onDeselectAllVisibleMovies: () => void;
   onClearAllSelectedMovies: () => void;
   onToggleQuickPreset: (presetTitle: string) => void;
   onOpenCustomModal: () => void;
@@ -68,8 +66,6 @@ export function Step4MoviesView({
   ageRatingLimit,
 
   onToggleMovie,
-  onSelectAllVisibleMovies,
-  onDeselectAllVisibleMovies,
   onClearAllSelectedMovies,
   onToggleQuickPreset,
   onOpenCustomModal,
@@ -122,20 +118,6 @@ export function Step4MoviesView({
               <span>Add Custom Movie</span>
             </button>
 
-            <button
-              type="button"
-              onClick={onSelectAllVisibleMovies}
-              className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-bold transition"
-            >
-              Select All Shown
-            </button>
-            <button
-              type="button"
-              onClick={onDeselectAllVisibleMovies}
-              className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition"
-            >
-              Deselect Shown
-            </button>
             <button
               type="button"
               onClick={onClearAllSelectedMovies}
@@ -280,7 +262,7 @@ export function Step4MoviesView({
         {/* Filtered Movie Cards Grid */}
         {visibleMoviesStep4.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {visibleMoviesStep4.map((movie) => {
+            {visibleMoviesStep4.map((movie, idx) => {
               const isSelected = selectedMovieIds.includes(movie.id);
               const warnings = isAiCuratedMode
                 ? []
@@ -291,7 +273,7 @@ export function Step4MoviesView({
 
               return (
                 <button
-                  key={movie.id}
+                  key={`${movie.id}-${idx}`}
                   type="button"
                   onClick={() => onToggleMovie(movie.id)}
                   className={`p-3 rounded-2xl border text-left transition flex items-center justify-between gap-3 active:scale-95 ${

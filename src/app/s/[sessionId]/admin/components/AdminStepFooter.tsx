@@ -113,9 +113,7 @@ export function AdminStepFooter({
               disabled={!isReadyToStart || isLaunching}
               title={
                 !isReadyToStart
-                  ? selectedCount === 0
-                    ? 'Select at least 1 movie to start voting'
-                    : 'Session title is required'
+                  ? 'Select at least 1 movie to start voting'
                   : 'Start voting now'
               }
               className={`px-4 sm:px-5 py-2 rounded-xl text-xs font-black transition flex items-center gap-2 shadow-lg active:scale-95 ${

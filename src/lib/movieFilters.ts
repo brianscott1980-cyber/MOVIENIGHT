@@ -31,7 +31,16 @@ export function matchesMovieCriteria(movie: Movie, sources: string[], genres: st
 
 /** Explicitly added movies remain choices even when the catalogue is filtered. */
 export function getSetupMovieChoices(movies: Movie[], sources: string[], genres: string[], rating: string): Movie[] {
-  return movies.filter((movie) => movie.isCustom || matchesMovieCriteria(movie, sources, genres, rating));
+  const seenIds = new Set<string>();
+  const results: Movie[] = [];
+  for (const movie of movies) {
+    if (seenIds.has(movie.id)) continue;
+    if (movie.isCustom || matchesMovieCriteria(movie, sources, genres, rating)) {
+      seenIds.add(movie.id);
+      results.push(movie);
+    }
+  }
+  return results;
 }
 
 export function getMovieCriteriaWarnings(movie: Movie, sources: string[], genres: string[], rating: string): string[] {
