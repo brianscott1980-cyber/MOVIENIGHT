@@ -1486,3 +1486,63 @@ export async function deleteSessionInDB(sessionId: string): Promise<void> {
   const pool = getPool();
   await pool.query('DELETE FROM sessions WHERE session_id = $1', [sessionId]);
 }
+
+export async function getSessionOgMetadata(rawSessionId: string): Promise<{
+  sessionId: string;
+  title: string;
+  topMovie: Movie | null;
+  movieCount: number;
+} | null> {
+  try {
+    await ensureDbInitialized();
+    const pool = getPool();
+    let sessionId = (rawSessionId || '').trim();
+    const digitsOnly = sessionId.replace(/\D/g, '');
+    if (digitsOnly.length >= 6 && digitsOnly.length <= 8) {
+      sessionId = digitsOnly;
+    }
+
+    const sessionRes = await pool.query<{ session_id: string; session_title: string }>(
+      'SELECT session_id, session_title FROM sessions WHERE session_id = $1',
+      [sessionId]
+    );
+
+    if (sessionRes.rows.length === 0) {
+      return null;
+    }
+
+    const session = sessionRes.rows[0];
+    const allMovies = await getAvailableMovies(session.session_id);
+
+    // Active Movies for this session
+    const activeMovieRes = await pool.query<{ movie_id: string }>(
+      'SELECT movie_id FROM active_movies WHERE session_id = $1',
+      [session.session_id]
+    );
+    const activeMovieIds = new Set(activeMovieRes.rows.map((r) => r.movie_id));
+    const activeMovies = allMovies.filter((m) => activeMovieIds.has(m.id));
+
+    // Determine highest rated movie among active movies (or any session movie if none active)
+    const poolForRating = activeMovies.length > 0 ? activeMovies : allMovies;
+    let topMovie: Movie | null = null;
+    if (poolForRating.length > 0) {
+      topMovie = [...poolForRating].sort((a, b) => {
+        const ratingA = a.tmdbRating ?? a.imdbRating ?? 0;
+        const ratingB = b.tmdbRating ?? b.imdbRating ?? 0;
+        if (ratingB !== ratingA) return ratingB - ratingA;
+        return (b.year || 0) - (a.year || 0);
+      })[0];
+    }
+
+    return {
+      sessionId: session.session_id,
+      title: session.session_title,
+      topMovie,
+      movieCount: activeMovies.length || allMovies.length,
+    };
+  } catch (err) {
+    console.error('Error fetching session OG metadata:', err);
+    return null;
+  }
+}
+
