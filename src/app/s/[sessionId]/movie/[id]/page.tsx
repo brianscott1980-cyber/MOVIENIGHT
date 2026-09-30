@@ -7,6 +7,7 @@ import { notFound } from 'next/navigation';
 import { GENRE_INFO } from '@/data/moviesData';
 import { useVoter } from '@/context/VoterContext';
 import { VoterAvatar } from '@/components/VoterAvatar';
+import { trackViewMovie, trackPlayTrailer } from '@/lib/analytics';
 import {
   ArrowLeft,
   Star,
@@ -59,6 +60,37 @@ export default function SessionMovieDetailPage({
   const movie = movies[movieIndex];
   const prevMovie = movieIndex > 0 ? movies[movieIndex - 1] : null;
   const nextMovie = movieIndex < movies.length - 1 ? movies[movieIndex + 1] : null;
+
+  React.useEffect(() => {
+    if (movie) {
+      trackViewMovie({
+        sessionId,
+        movieId: movie.id,
+        movieTitle: movie.title,
+        source: 'page',
+      });
+      if (shouldAutoPlay && movie.youtubeTrailerId) {
+        trackPlayTrailer({
+          sessionId,
+          movieId: movie.id,
+          movieTitle: movie.title,
+          youtubeTrailerId: movie.youtubeTrailerId,
+        });
+      }
+    }
+  }, [movie, sessionId, shouldAutoPlay]);
+
+  const handlePlayTrailer = () => {
+    setIsPlaying(true);
+    if (movie?.youtubeTrailerId) {
+      trackPlayTrailer({
+        sessionId,
+        movieId: movie.id,
+        movieTitle: movie.title,
+        youtubeTrailerId: movie.youtubeTrailerId,
+      });
+    }
+  };
 
   const voted = isVoted(movie.id);
   const voteLimitReached = !voted && hasReachedVoteLimit;
@@ -127,7 +159,7 @@ export default function SessionMovieDetailPage({
               />
             ) : (
               <div
-                onClick={() => setIsPlaying(true)}
+                onClick={handlePlayTrailer}
                 className="relative w-full h-full cursor-pointer group/player"
               >
                 {/* Ambient blurred backdrop */}

@@ -7,6 +7,7 @@ import { Movie } from '@/types';
 import { useVoter } from '@/context/VoterContext';
 import { GENRE_INFO } from '@/data/moviesData';
 import { VoterAvatar } from './VoterAvatar';
+import { trackViewMovie, trackPlayTrailer } from '@/lib/analytics';
 import {
   X,
   Star,
@@ -35,7 +36,35 @@ export function MovieDetailModal({ movie, autoPlay = false, onClose }: MovieDeta
 
   useEffect(() => {
     setIsPlaying(Boolean(autoPlay));
-  }, [movie, autoPlay]);
+    if (movie) {
+      trackViewMovie({
+        sessionId: sessionData?.session?.sessionId,
+        movieId: movie.id,
+        movieTitle: movie.title,
+        source: 'modal',
+      });
+      if (autoPlay && movie.youtubeTrailerId) {
+        trackPlayTrailer({
+          sessionId: sessionData?.session?.sessionId,
+          movieId: movie.id,
+          movieTitle: movie.title,
+          youtubeTrailerId: movie.youtubeTrailerId,
+        });
+      }
+    }
+  }, [movie, autoPlay, sessionData?.session?.sessionId]);
+
+  const handlePlayTrailer = () => {
+    setIsPlaying(true);
+    if (movie && movie.youtubeTrailerId) {
+      trackPlayTrailer({
+        sessionId: sessionData?.session?.sessionId,
+        movieId: movie.id,
+        movieTitle: movie.title,
+        youtubeTrailerId: movie.youtubeTrailerId,
+      });
+    }
+  };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -93,7 +122,7 @@ export function MovieDetailModal({ movie, autoPlay = false, onClose }: MovieDeta
             />
           ) : (
             <div
-              onClick={() => setIsPlaying(true)}
+              onClick={handlePlayTrailer}
               className="relative w-full h-full cursor-pointer group/player"
             >
               {/* Ambient blurred backdrop for letterbox-free aesthetics */}

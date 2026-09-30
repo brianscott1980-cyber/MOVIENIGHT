@@ -161,3 +161,44 @@ export function trackCreateSession({
     session_title: sessionTitle,
   });
 }
+
+/** Track viewing a movie's detail modal or full detail page */
+export function trackViewMovie({
+  sessionId,
+  movieId,
+  movieTitle,
+  source, // 'modal' | 'page'
+}: {
+  sessionId?: string;
+  movieId: string;
+  movieTitle: string;
+  source: 'modal' | 'page';
+}) {
+  trackEvent('view_movie_details', {
+    session_id: sessionId,
+    movie_id: movieId,
+    movie_title: movieTitle,
+    source,
+  });
+}
+
+/** Track clicking to play a movie's official YouTube trailer */
+export function trackPlayTrailer({
+  sessionId,
+  movieId,
+  movieTitle,
+  youtubeTrailerId,
+}: {
+  sessionId?: string;
+  movieId: string;
+  movieTitle: string;
+  youtubeTrailerId: string;
+}) {
+  trackEvent('play_trailer', {
+    session_id: sessionId,
+    movie_id: movieId,
+    movie_title: movieTitle,
+    youtube_trailer_id: youtubeTrailerId,
+  });
+}
+
