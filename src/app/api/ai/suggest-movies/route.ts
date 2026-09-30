@@ -26,12 +26,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Movie description is required.' }, { status: 400 });
     }
 
-    const apiKey =
-      process.env.GEMINI_API_KEY ||
-      'AQ.Ab8RN6KQeWnXh0q52q0fpQXovGJ8KD8MJQw8XfxaLFQyKRcw_Q';
+    const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
-      return NextResponse.json({ error: 'Gemini API key is not configured.' }, { status: 500 });
+      return NextResponse.json({ error: 'Gemini API key is not configured. Please set GEMINI_API_KEY in your environment.' }, { status: 500 });
     }
 
     const targetCount = Math.min(Math.max(Number(count) || 8, 4), 36);
