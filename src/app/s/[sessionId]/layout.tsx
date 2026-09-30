@@ -13,18 +13,16 @@ export async function generateMetadata({
   const data = await getSessionOgMetadata(sessionId);
 
   const title = data?.title ? `🍿 ${data.title} | MovieNight` : `🍿 Movie Night #${sessionId}`;
-  const topMovie = data?.topMovie;
-  const ratingText = topMovie
-    ? `⭐ Top rated: ${topMovie.title} (${topMovie.tmdbRating ?? topMovie.imdbRating}★)`
-    : 'Vote for tonight\'s movie!';
-  const description = `Join the voting session! ${ratingText}. Choose your favorites, watch official trailers, and see the live podium.`;
+  const movieCount = data?.movieCount ?? 0;
+  const countText = movieCount > 0 ? ` featuring ${movieCount} contenders` : '';
+  const description = `Join the voting session${countText}! Cast your votes, watch official trailers, and track the live podium standings in real time.`;
 
   const ogImages = [
     {
       url: `/s/${sessionId}/opengraph-image`,
       width: 1200,
       height: 630,
-      alt: `${data?.title || 'MovieNight Session'} - ${topMovie?.title || 'Contender'}`,
+      alt: `${data?.title || 'MovieNight Session'} - Ballot & Live Podium`,
     },
   ];
 

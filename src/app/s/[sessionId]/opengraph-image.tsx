@@ -21,10 +21,6 @@ export default async function Image({
   const topMovie = data?.topMovie;
   const movieCount = data?.movieCount ?? 0;
 
-  const topRating = topMovie
-    ? (topMovie.tmdbRating ?? topMovie.imdbRating)?.toFixed(1)
-    : null;
-
   return new ImageResponse(
     (
       <div
@@ -180,7 +176,7 @@ export default async function Image({
         </div>
       </div>
 
-      {/* Right Side: Highest Rated Movie Poster Card */}
+      {/* Right Side: Featured Contender Movie Poster */}
       {topMovie && (
         <div
           style={{
@@ -197,13 +193,13 @@ export default async function Image({
             position: 'relative',
           }}
         >
-          {/* Top Rated Badge Header */}
+          {/* Header Banner */}
           <div
             style={{
               width: '100%',
               backgroundColor: '#f59e0b',
               color: '#0f172a',
-              padding: '8px 12px',
+              padding: '9px 12px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -214,7 +210,7 @@ export default async function Image({
               letterSpacing: '0.75px',
             }}
           >
-            <span>⭐ Highest Rated Contender</span>
+            <span>🎬 On the Ballot</span>
           </div>
 
           {/* Poster Image */}
@@ -222,7 +218,7 @@ export default async function Image({
             style={{
               position: 'relative',
               width: '100%',
-              height: '380px',
+              height: '420px',
               display: 'flex',
               overflow: 'hidden',
               backgroundColor: '#1e293b',
@@ -238,79 +234,6 @@ export default async function Image({
                 objectFit: 'cover',
               }}
             />
-          </div>
-
-          {/* Movie Details Footer */}
-          <div
-            style={{
-              width: '100%',
-              padding: '16px 20px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '6px',
-              backgroundColor: '#0f172a',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
-            >
-              <span
-                style={{
-                  fontSize: '19px',
-                  fontWeight: 800,
-                  color: '#ffffff',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  maxWidth: '200px',
-                }}
-              >
-                {topMovie.title}
-              </span>
-              {topRating && (
-                <span
-                  style={{
-                    backgroundColor: 'rgba(245, 158, 11, 0.2)',
-                    color: '#f59e0b',
-                    border: '1px solid rgba(245, 158, 11, 0.4)',
-                    borderRadius: '8px',
-                    padding: '3px 8px',
-                    fontSize: '14px',
-                    fontWeight: 800,
-                  }}
-                >
-                  ★ {topRating}
-                </span>
-              )}
-            </div>
-
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontSize: '13px',
-                color: '#94a3b8',
-              }}
-            >
-              <span>{topMovie.year}</span>
-              {topMovie.genre && (
-                <>
-                  <span>•</span>
-                  <span>{topMovie.genre}</span>
-                </>
-              )}
-              {topMovie.rated && (
-                <>
-                  <span>•</span>
-                  <span>{topMovie.rated}</span>
-                </>
-              )}
-            </div>
           </div>
         </div>
       )}
