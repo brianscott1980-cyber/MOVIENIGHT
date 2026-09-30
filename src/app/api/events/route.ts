@@ -6,20 +6,22 @@ export const runtime = 'nodejs';
 
 export async function GET(request: Request) {
   let unsubscribe: (() => void) | null = null;
+  const { searchParams } = new URL(request.url);
+  const sessionId = searchParams.get('sessionId') || 'session-main';
 
   const stream = new ReadableStream<Uint8Array>({
-    start(controller) {
-      // 1. Immediately send current session state
+    async start(controller) {
+      // 1. Immediately send current session state for this sessionId
       try {
-        const initialData = computeSessionResponseFromDB();
+        const initialData = await computeSessionResponseFromDB(sessionId);
         const payload = `data: ${JSON.stringify(initialData)}\n\n`;
         controller.enqueue(new TextEncoder().encode(payload));
       } catch (err) {
         console.error('Failed to send initial SSE payload:', err);
       }
 
-      // 2. Subscribe to real-time broadcasts
-      unsubscribe = broadcaster.subscribe(controller);
+      // 2. Subscribe to real-time broadcasts for this session
+      unsubscribe = broadcaster.subscribe(sessionId, controller);
     },
     cancel() {
       if (unsubscribe) {
@@ -38,4 +40,3 @@ export async function GET(request: Request) {
     },
   });
 }
-

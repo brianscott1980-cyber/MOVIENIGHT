@@ -1,4 +1,10 @@
 export interface Movie {
+  addedByVoterId?: string;
+  tmdbId?: number;
+  tmdbRating?: number;
+  watchProvidersUrl?: string;
+  watchRegion?: string;
+
   id: string;
   title: string;
   year: number;
@@ -19,6 +25,37 @@ export interface Movie {
   awards?: string;
   rottenTomatoes?: string | null;
   boxOffice?: string | null;
+  streamingSources?: string[];
+  isCustom?: boolean;
+}
+
+export interface CustomMovieInput {
+  tmdbId?: number;
+  tmdbRating?: number;
+  watchProvidersUrl?: string;
+  watchRegion?: string;
+
+  title: string;
+  year: number;
+  genres?: string[];
+  genre?: string;
+  genreEmoji?: string;
+  director?: string;
+  cast?: string[];
+  synopsis?: string;
+  trailerId?: string;
+  youtubeTrailerId?: string;
+  poster?: string;
+  posterUrl?: string;
+  backdropUrl?: string;
+  tagline?: string;
+  runtime?: number | string;
+  rated?: string;
+  ageRating?: string;
+  imdbRating?: number;
+  imdbUrl?: string;
+  streamingSources?: string[];
+  addedByVoterId?: string;
 }
 
 export interface Voter {
@@ -27,6 +64,8 @@ export interface Voter {
   avatar: string;
   avatarUrl?: string;
   color: string;
+  userId?: string | null;
+  email?: string | null;
 }
 
 export interface Ballot {
@@ -47,8 +86,13 @@ export interface MovieScore {
   totalVoters: number;
   voterNames: string[];
   voters?: Voter[];
+  isJointPosition?: boolean;
   rankPosition?: number; // 1 = Gold, 2 = Silver, 3 = Bronze
 }
+
+export type SessionStatus = 'setup' | 'voting' | 'paused' | 'locked';
+export type DeadlockRule = 'random' | 'runoff' | 'revote';
+export type AgeRatingLimit = 'ALL' | 'U/G' | 'PG' | '12/PG-13' | '15/R' | '18/NC-17' | string;
 
 export interface SessionConfig {
   sessionId: string;
@@ -57,15 +101,44 @@ export interface SessionConfig {
   activeGenres: string[];
   voters: Voter[];
   ballots: Record<string, Ballot>;
-  status: 'voting' | 'locked';
+  status: SessionStatus;
   winnerMovieId?: string | null;
+  creatorUserId?: string | null;
+  creatorEmail?: string | null;
+  creatorName?: string | null;
+  creatorAvatar?: string | null;
+  // Session setup configuration
+  maxVotesPerVoter: number; // default = 3 (0 = unlimited)
+  isPublic: boolean; // true = public live podium, false = secret ballot until locked
+  deadlockRule: DeadlockRule; // 'random' | 'revote'
+  ageRatingLimit: string; // 'ALL', 'U', 'PG', '12', '15', '18', 'G', 'PG-13', 'R'
+  yearFilter: string; // 'ALL', '80s', '90s', '2000s', 'custom'
+  minYear?: number | null;
+  maxYear?: number | null;
+  genreFilter: string[];
+  streamingFilter: string[]; // e.g. ['netflix', 'prime', 'apple', 'disney', 'plex'] or []
+  movieAdditionMode: 'admin_only' | 'voter_suggestions';
+  maxSuggestionsPerVoter: number;
+  isAiCurated?: boolean;
+  aiPrompt?: string;
+  aiMovieIds?: string[];
   createdAt: string;
   updatedAt: string;
 }
 
+export interface CreatorMetadata {
+  userId?: string | null;
+  email?: string | null;
+  name?: string | null;
+  avatarUrl?: string | null;
+}
+
 export interface SessionResponse {
   session: SessionConfig;
-  leaderboard: MovieScore[];
+  allAvailableMovies?: Movie[];
+  leaderboard?: MovieScore[];
+  expired?: boolean;
+  error?: string;
   turnout: {
     totalVoters: number;
     votedCount: number;
@@ -73,3 +146,4 @@ export interface SessionResponse {
     votedVoters: Voter[];
   };
 }
+

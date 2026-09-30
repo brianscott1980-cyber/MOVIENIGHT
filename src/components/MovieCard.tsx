@@ -1,5 +1,7 @@
 'use client';
 
+import { STREAMING_PLATFORMS } from '@/data/moviesData';
+import { normalizeMovieSource } from '@/lib/movieFilters';
 import React, { useMemo } from 'react';
 import { Movie, Voter } from '@/types';
 import { useVoter } from '@/context/VoterContext';
@@ -21,9 +23,10 @@ interface MovieCardProps {
 }
 
 export function MovieCard({ movie, onOpenDetails }: MovieCardProps) {
-  const { currentVoter, isVoted, toggleMovieVote, sessionData } = useVoter();
+  const { currentVoter, isVoted, toggleMovieVote, hasReachedVoteLimit, isVotePending, sessionData } = useVoter();
 
   const voted = isVoted(movie.id);
+  const voteLimitReached = !voted && hasReachedVoteLimit;
 
   // Find overall tally standing from leaderboard
   const scoreItem = sessionData?.leaderboard?.find((item) => item.movie.id === movie.id);
@@ -64,17 +67,17 @@ export function MovieCard({ movie, onOpenDetails }: MovieCardProps) {
         {rankPosition === 1 && (
           <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[11px] shadow-lg glow-gold">
             <Crown className="w-3.5 h-3.5 fill-slate-950" />
-            <span>🥇 1ST PLACE ({totalVotes} {totalVotes === 1 ? 'vote' : 'votes'})</span>
+            <span>🥇 {scoreItem?.isJointPosition ? 'JOINT ' : ''}1ST PLACE ({totalVotes} {totalVotes === 1 ? 'vote' : 'votes'})</span>
           </div>
         )}
         {rankPosition === 2 && (
           <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-950 font-black text-[11px] shadow-lg">
-            <span>🥈 2ND PLACE ({totalVotes})</span>
+            <span>🥈 {scoreItem?.isJointPosition ? 'JOINT ' : ''}2ND PLACE ({totalVotes})</span>
           </div>
         )}
         {rankPosition === 3 && (
           <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-700 text-amber-100 font-black text-[11px] shadow-lg">
-            <span>🥉 3RD PLACE ({totalVotes})</span>
+            <span>🥉 {scoreItem?.isJointPosition ? 'JOINT ' : ''}3RD PLACE ({totalVotes})</span>
           </div>
         )}
         {voted && (
@@ -127,7 +130,7 @@ export function MovieCard({ movie, onOpenDetails }: MovieCardProps) {
           </span>
           <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-yellow-500 text-slate-950 text-xs font-black shadow">
             <Star className="w-3 h-3 fill-slate-950" />
-            <span>{movie.imdbRating.toFixed(1)}</span>
+            <span>{(movie.tmdbRating ?? movie.imdbRating).toFixed(1)}</span>
           </span>
         </div>
 
@@ -146,7 +149,7 @@ export function MovieCard({ movie, onOpenDetails }: MovieCardProps) {
           </button>
         </div>
 
-        {/* Real-time Voter Avatars along bottom border of thumbnail */}
+        {/* Real-time Voter Avatars - Always visible */}
         {votersWhoVoted.length > 0 && (
           <div
             onClick={(e) => e.stopPropagation()}
@@ -242,6 +245,39 @@ export function MovieCard({ movie, onOpenDetails }: MovieCardProps) {
               </span>
             )}
           </div>
+
+          {/* Streaming Platform Badges */}
+          {movie.streamingSources && movie.streamingSources.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1 mt-2">
+              {movie.streamingSources.slice(0, 3).map((source) => STREAMING_PLATFORMS.find((platform) => platform.id === normalizeMovieSource(source))?.name || source).map((source) => (
+                <span
+                  key={source}
+                  className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${
+                    source === 'Netflix'
+                      ? 'bg-red-950/70 text-red-300 border-red-800/50'
+                      : source === 'Prime Video'
+                      ? 'bg-sky-950/70 text-sky-300 border-sky-800/50'
+                      : source === 'Apple TV+'
+                      ? 'bg-zinc-800 text-slate-200 border-zinc-700'
+                      : source === 'Disney+'
+                      ? 'bg-blue-950/70 text-blue-300 border-blue-800/50'
+                      : source === 'Max'
+                      ? 'bg-purple-950/70 text-purple-300 border-purple-800/50'
+                      : source === 'Plex Library'
+                      ? 'bg-amber-950/90 text-amber-300 border-amber-600/70 font-black'
+                      : 'bg-slate-800 text-slate-300 border-slate-700'
+                  }`}
+                >
+                  {source === 'Plex Library' ? '🟠 Plex' : source}
+                </span>
+              ))}
+              {movie.streamingSources.length > 3 && (
+                <span className="text-[9px] text-slate-400 font-semibold">
+                  +{movie.streamingSources.length - 3}
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Single Clean VOTE Button Under Movie Tile */}
@@ -254,7 +290,11 @@ export function MovieCard({ movie, onOpenDetails }: MovieCardProps) {
                 '0 votes'
               )}
             </span>
-            {currentVoter ? (
+            {sessionData?.session?.status === 'locked' ? (
+              <span className="text-[10px] text-purple-400 font-semibold flex items-center gap-1">
+                <span>🔒 Voting Ended</span>
+              </span>
+            ) : currentVoter ? (
               <span className="text-[10px] text-slate-400 flex items-center gap-1.5">
                 <VoterAvatar voter={currentVoter} size="xs" />
                 <span>Voting as <strong className="text-slate-300 font-semibold">{currentVoter.name}</strong></span>
@@ -269,13 +309,37 @@ export function MovieCard({ movie, onOpenDetails }: MovieCardProps) {
           <button
             type="button"
             onClick={() => toggleMovieVote(movie.id)}
-            className={`w-full h-11 rounded-xl text-xs sm:text-sm font-black transition flex items-center justify-center gap-2 border active:scale-98 shadow-md ${
-              voted
+            disabled={sessionData?.session?.status === 'locked' || voteLimitReached || isVotePending}
+            title={
+              sessionData?.session?.status === 'locked'
+                ? 'Voting has ended for this session'
+                : voteLimitReached
+                ? 'Vote limit reached. Unvote a movie to free a vote.'
+                : undefined
+            }
+            className={`disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-auto w-full h-11 rounded-xl text-xs sm:text-sm font-black transition flex items-center justify-center gap-2 border active:scale-98 shadow-md ${
+              sessionData?.session?.status === 'locked'
+                ? voted
+                  ? 'bg-emerald-950/40 border-emerald-800/60 text-emerald-400 cursor-not-allowed'
+                  : 'bg-slate-950/80 border-slate-800 text-slate-500 cursor-not-allowed'
+                : voted
                 ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 border-emerald-400 shadow-emerald-500/20 glow-cyan'
                 : 'bg-slate-800 hover:bg-amber-400 text-slate-100 hover:text-slate-950 border-slate-700 hover:border-amber-300'
             }`}
           >
-            {voted ? (
+            {sessionData?.session?.status === 'locked' ? (
+              voted ? (
+                <>
+                  <Check className="w-4 h-4 text-emerald-400 stroke-[3]" />
+                  <span>You Voted (Voting Closed)</span>
+                </>
+              ) : (
+                <>
+                  <span>🔒</span>
+                  <span>Voting Closed</span>
+                </>
+              )
+            ) : voted ? (
               <>
                 <Check className="w-4 h-4 text-slate-950 stroke-[3]" />
                 <span>Voted! (Tap to undo)</span>
@@ -283,7 +347,7 @@ export function MovieCard({ movie, onOpenDetails }: MovieCardProps) {
             ) : (
               <>
                 <span>🗳️</span>
-                <span>Vote</span>
+                <span>{voteLimitReached ? 'Limit reached — unvote to free a vote' : 'Vote'}</span>
               </>
             )}
           </button>

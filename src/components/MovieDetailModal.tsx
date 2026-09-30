@@ -1,5 +1,6 @@
 'use client';
 
+import { positionLabel } from '@/lib/ranking';
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Movie } from '@/types';
@@ -29,7 +30,7 @@ interface MovieDetailModalProps {
 }
 
 export function MovieDetailModal({ movie, autoPlay = false, onClose }: MovieDetailModalProps) {
-  const { currentVoter, isVoted, toggleMovieVote, sessionData } = useVoter();
+  const { currentVoter, isVoted, toggleMovieVote, hasReachedVoteLimit, isVotePending, sessionData } = useVoter();
   const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
@@ -56,6 +57,7 @@ export function MovieDetailModal({ movie, autoPlay = false, onClose }: MovieDeta
   if (!movie) return null;
 
   const voted = isVoted(movie.id);
+  const voteLimitReached = !voted && hasReachedVoteLimit;
 
   const scoreItem = sessionData?.leaderboard?.find((item) => item.movie.id === movie.id);
   const totalVotes = scoreItem?.votes || 0;
@@ -153,13 +155,13 @@ export function MovieDetailModal({ movie, autoPlay = false, onClose }: MovieDeta
                   </span>
                 )}
                 <a
-                  href={movie.imdbUrl}
+                  href={movie.tmdbId ? `https://www.themoviedb.org/movie/${movie.tmdbId}` : movie.imdbUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full bg-yellow-500/20 text-yellow-300 border border-yellow-500/40 hover:bg-yellow-500/30 transition font-bold"
                 >
                   <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-                  <span>IMDb {movie.imdbRating.toFixed(1)}</span>
+                  <span>{movie.tmdbRating != null ? 'TMDB' : 'IMDb'} {(movie.tmdbRating ?? movie.imdbRating).toFixed(1)}</span>
                   <ExternalLink className="w-3 h-3 ml-0.5 opacity-70" />
                 </a>
                 {movie.rottenTomatoes && (
@@ -178,7 +180,7 @@ export function MovieDetailModal({ movie, autoPlay = false, onClose }: MovieDeta
                         : 'bg-amber-700 text-amber-100'
                     }`}
                   >
-                    <span>{rankPosition === 1 ? '🥇 Gold' : rankPosition === 2 ? '🥈 Silver' : '🥉 Bronze'}</span>
+                    <span>{positionLabel(rankPosition, scoreItem?.isJointPosition)}</span>
                     <span>({totalVotes} {totalVotes === 1 ? 'vote' : 'votes'})</span>
                   </span>
                 )}
@@ -305,7 +307,9 @@ export function MovieDetailModal({ movie, autoPlay = false, onClose }: MovieDeta
                 <button
                   type="button"
                   onClick={() => toggleMovieVote(movie.id)}
-                  className={`w-full sm:w-auto min-h-[44px] px-6 py-2.5 rounded-xl text-xs sm:text-sm font-black transition flex items-center justify-center gap-2 active:scale-95 shadow-lg ${
+            disabled={voteLimitReached || isVotePending}
+            title={voteLimitReached ? 'Vote limit reached. Unvote a movie to free a vote.' : undefined}
+                  className={`disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto min-h-[44px] px-6 py-2.5 rounded-xl text-xs sm:text-sm font-black transition flex items-center justify-center gap-2 active:scale-95 shadow-lg ${
                     voted
                       ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 border border-emerald-400 glow-cyan'
                       : 'bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-amber-400/20 glow-gold'
@@ -319,7 +323,7 @@ export function MovieDetailModal({ movie, autoPlay = false, onClose }: MovieDeta
                   ) : (
                     <>
                       <span>🗳️</span>
-                      <span>Vote for this Movie</span>
+                      <span>{voteLimitReached ? 'Limit reached — unvote to free a vote' : 'Vote for this Movie'}</span>
                     </>
                   )}
                 </button>

@@ -6,12 +6,12 @@ import { VoterAvatar } from '@/components/VoterAvatar';
 import { Check, Clock, Users } from 'lucide-react';
 
 export function VoterRollCall() {
-  const { sessionData, currentVoter, setCurrentVoter } = useVoter();
+  const { sessionData, currentVoter } = useVoter();
 
-  if (!sessionData) return null;
+  if (!sessionData?.session) return null;
 
   const { voters, ballots } = sessionData.session;
-  const { votedCount, totalVoters } = sessionData.turnout;
+  const { votedCount, totalVoters } = sessionData.turnout || { votedCount: 0, totalVoters: 0 };
   const percentage = totalVoters > 0 ? Math.round((votedCount / totalVoters) * 100) : 0;
 
   return (
@@ -65,26 +65,29 @@ export function VoterRollCall() {
           const isCurrent = currentVoter?.id === voter.id;
 
           return (
-            <button
+            <div
               key={voter.id}
-              onClick={() => setCurrentVoter(voter)}
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition border shrink-0 active:scale-95 ${
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold border shrink-0 ${
                 isCurrent
-                  ? 'border-amber-400 bg-amber-950/40 text-amber-300 shadow-sm'
+                  ? 'border-amber-400/80 bg-amber-950/40 text-amber-300 shadow-sm ring-1 ring-amber-400/30'
                   : hasVoted
-                  ? 'border-emerald-500/40 bg-emerald-950/20 text-emerald-300 hover:border-emerald-500'
-                  : 'border-slate-800 bg-slate-950/40 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                  ? 'border-emerald-500/40 bg-emerald-950/20 text-emerald-300'
+                  : 'border-slate-800 bg-slate-950/40 text-slate-400'
               }`}
-              title={`Switch to ${voter.name}`}
             >
               <VoterAvatar voter={voter} size="xs" />
               <span>{voter.name}</span>
+              {isCurrent && (
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/25 text-amber-300 font-bold uppercase tracking-wider">
+                  You
+                </span>
+              )}
               {hasVoted ? (
                 <Check className="w-3 h-3 text-emerald-400" />
               ) : (
                 <Clock className="w-3 h-3 text-slate-400 opacity-60" />
               )}
-            </button>
+            </div>
           );
         })}
       </div>
