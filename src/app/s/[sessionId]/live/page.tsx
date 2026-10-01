@@ -513,12 +513,12 @@ export default function SessionLivePage() {
           </div>
 
           <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
-            <table className="w-full text-left text-xs sm:text-sm min-w-[560px]">
+            <table className="w-full text-left text-xs sm:text-sm min-w-full sm:min-w-[560px]">
               <thead className="text-[10px] sm:text-xs uppercase tracking-wider text-slate-400 border-b border-slate-800">
                 <tr>
                   <th className="py-2.5 px-3">Tally Rank</th>
                   <th className="py-2.5 px-4">Movie</th>
-                  <th className="py-2.5 px-3">Genre</th>
+                  <th className="py-2.5 px-3 hidden sm:table-cell">Genre</th>
                   <th className="py-2.5 px-4 text-center">Total Votes</th>
                   <th className="py-2.5 px-4">Supporters</th>
                 </tr>
@@ -555,7 +555,7 @@ export default function SessionLivePage() {
                         </span>
                       </td>
 
-                      <td className="py-2.5 px-3 text-xs text-slate-300 whitespace-nowrap">
+                      <td className="py-2.5 px-3 text-xs text-slate-300 whitespace-nowrap hidden sm:table-cell">
                         <span>{genreMeta.emoji}</span>
                         <span className="ml-1 text-slate-400 hidden sm:inline">{genreMeta.label}</span>
                       </td>
