@@ -509,18 +509,17 @@ export async function sendSessionLaunchedEmail({
         : `🍿 You have been invited by ${hostName} to take part in ${sessionTitle} (Code: ${formattedCode})`;
       const html = buildSessionLaunchedHtml({ ...sharedContext, role });
 
-      for (const email of overrideRecipients) {
-        try {
-          const info = await transporter.sendMail({
-            from: getSenderAddress(),
-            to: email,
-            subject,
-            html,
-          });
-          console.info(`[Email] Notification (${role}) sent to ${email}. MessageId: ${info.messageId}`);
-        } catch (err) {
-          console.error(`[Email] Failed to send (${role}) email to ${email}:`, err);
-        }
+      try {
+        const info = await transporter.sendMail({
+          from: getSenderAddress(),
+          to: getSenderAddress(),
+          bcc: overrideRecipients,
+          subject,
+          html,
+        });
+        console.info(`[Email] Notification (${role}) sent via BCC to: ${overrideRecipients.join(', ')}. MessageId: ${info.messageId}`);
+      } catch (err) {
+        console.error(`[Email] Failed to send (${role}) email via BCC:`, err);
       }
       return;
     }
@@ -556,7 +555,7 @@ export async function sendSessionLaunchedEmail({
       return;
     }
 
-    // 1. Send Host Email ("Your MovieNight ballot has started")
+    // 1. Send Host Email ("Your MovieNight ballot has started") via BCC
     if (hostRecipients.size > 0 && (!recipientRole || recipientRole === 'host')) {
       const hostTargets = Array.from(hostRecipients);
       const hostSubject = `🍿 Your MovieNight ballot has started: ${sessionTitle} (Code: ${formattedCode})`;
@@ -565,34 +564,34 @@ export async function sendSessionLaunchedEmail({
       try {
         const info = await transporter.sendMail({
           from: getSenderAddress(),
-          to: hostTargets.join(', '),
+          to: getSenderAddress(),
+          bcc: hostTargets,
           subject: hostSubject,
           html: hostHtml,
         });
-        console.info(`[Email] Host notification sent to: ${hostTargets.join(', ')}. MessageId: ${info.messageId}`);
+        console.info(`[Email] Host notification sent via BCC to: ${hostTargets.join(', ')}. MessageId: ${info.messageId}`);
       } catch (err) {
-        console.error('[Email] Failed to send host session launch notification:', err);
+        console.error('[Email] Failed to send host session launch notification via BCC:', err);
       }
     }
 
-    // 2. Send Invitee Email ("You have been invited by Host name to take part")
+    // 2. Send Invitee Email ("You have been invited by Host name to take part") via BCC
     if (inviteeRecipients.size > 0 && (!recipientRole || recipientRole === 'invitee')) {
       const inviteeTargets = Array.from(inviteeRecipients);
       const inviteeSubject = `🍿 You have been invited by ${hostName} to take part in ${sessionTitle} (Code: ${formattedCode})`;
       const inviteeHtml = buildSessionLaunchedHtml({ ...sharedContext, role: 'invitee' });
 
-      for (const invitee of inviteeTargets) {
-        try {
-          const info = await transporter.sendMail({
-            from: getSenderAddress(),
-            to: invitee,
-            subject: inviteeSubject,
-            html: inviteeHtml,
-          });
-          console.info(`[Email] Invitee notification sent to: ${invitee}. MessageId: ${info.messageId}`);
-        } catch (err) {
-          console.error(`[Email] Failed to send invitee notification to ${invitee}:`, err);
-        }
+      try {
+        const info = await transporter.sendMail({
+          from: getSenderAddress(),
+          to: getSenderAddress(),
+          bcc: inviteeTargets,
+          subject: inviteeSubject,
+          html: inviteeHtml,
+        });
+        console.info(`[Email] Invitee notification sent via BCC to: ${inviteeTargets.join(', ')}. MessageId: ${info.messageId}`);
+      } catch (err) {
+        console.error(`[Email] Failed to send invitee notification via BCC:`, err);
       }
     }
   } catch (err) {
@@ -831,11 +830,12 @@ export async function sendSessionWinnerCrownedEmail({
 
     const info = await transporter.sendMail({
       from: getSenderAddress(),
-      to: recipients.join(', '),
+      to: getSenderAddress(),
+      bcc: recipients,
       subject: `🏆 The Winner Is Crowned: ${winnerTitle} - ${sessionTitle}`,
       html,
     });
-    console.info(`[Email] Winner crowned notification sent successfully. MessageId: ${info.messageId}`);
+    console.info(`[Email] Winner crowned notification sent via BCC to ${recipients.length} recipients. MessageId: ${info.messageId}`);
   } catch (err) {
     console.error('[Email] Failed to send crowned winner notification:', err);
   }
