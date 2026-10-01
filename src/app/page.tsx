@@ -671,7 +671,7 @@ export default function ExploreSessionsPage() {
                             ? '⏸️ Paused'
                             : isLocked
                             ? '🏆 Crowned'
-                            : '🟢 Voting Live'}
+                            : '🟢 Live'}
                         </span>
                       </div>
                     </div>

@@ -56,7 +56,7 @@ export function BallotHostBanner({
                 ? 'Host: Paused'
                 : session.status === 'locked'
                 ? 'Host: Voting Concluded'
-                : 'Host: Voting Live'}
+                : 'Host: Live'}
             </span>
             <p className="text-[11px] sm:text-xs font-bold text-slate-900/90 hidden sm:block">
               {session.status === 'setup'
