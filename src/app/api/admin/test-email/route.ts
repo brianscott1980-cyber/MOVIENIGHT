@@ -1,5 +1,13 @@
 import { NextResponse } from 'next/server';
-import { getMailTransporter, getAdminEmail } from '@/lib/email';
+import {
+  getMailTransporter,
+  getAdminEmail,
+  sendSessionLaunchedEmail,
+  sendSessionWinnerCrownedEmail,
+  SAMPLE_EMAIL_MOVIES,
+} from '@/lib/email';
+import { computeSessionResponse, listSessions } from '@/lib/storage';
+import { SessionConfig } from '@/types';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -8,6 +16,8 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const targetEmail = searchParams.get('to') || getAdminEmail();
+    const mode = searchParams.get('mode') || 'launched';
+    const reqSessionId = searchParams.get('sessionId');
 
     if (!targetEmail) {
       return NextResponse.json({
@@ -41,36 +51,89 @@ export async function GET(request: Request) {
     await transporter.verify();
     console.info('[Email Diagnostic] SMTP connection verified successfully!');
 
-    // Send a test email
-    const sender = `"${process.env.SMTP_FROM_NAME || 'Movie Night'}" <${process.env.SMTP_USER || process.env.GMAIL_USER}>`;
-    const nowStr = new Date().toISOString();
+    // Find a real session or build a rich mock session
+    let sessionData = reqSessionId ? await computeSessionResponse(reqSessionId).catch(() => null) : null;
+    if (!sessionData) {
+      const allSessions = await listSessions().catch(() => []);
+      if (allSessions && allSessions.length > 0) {
+        sessionData = await computeSessionResponse(allSessions[0].sessionId).catch(() => null);
+      }
+    }
 
-    const info = await transporter.sendMail({
-      from: sender,
-      to: targetEmail,
-      subject: `🍿 Movie Night Test Email (${nowStr})`,
-      html: `
-        <div style="font-family: sans-serif; background-color: #080b12; color: #f8fafc; padding: 32px; border-radius: 16px;">
-          <h2 style="color: #f59e0b;">🍿 Movie Night SMTP Test</h2>
-          <p>This is a test notification confirming that Gmail SMTP is configured properly and delivering messages!</p>
-          <ul style="color: #cbd5e1; font-size: 14px;">
-            <li><strong>Timestamp:</strong> ${nowStr}</li>
-            <li><strong>Recipient:</strong> ${targetEmail}</li>
-            <li><strong>Sender:</strong> ${sender}</li>
-          </ul>
-          <p style="color: #10b981; font-weight: bold;">All systems operational! 🚀</p>
-        </div>
-      `,
+    let session: SessionConfig;
+    let contenders = SAMPLE_EMAIL_MOVIES;
+
+    if (sessionData && sessionData.session) {
+      session = sessionData.session;
+      if (sessionData.allAvailableMovies && sessionData.allAvailableMovies.length > 0) {
+        const activeSet = new Set(session.activeMovieIds || []);
+        const filtered = sessionData.allAvailableMovies.filter((m) => activeSet.has(m.id));
+        contenders = filtered.length > 0 ? filtered : sessionData.allAvailableMovies.slice(0, 6);
+      }
+    } else {
+      session = {
+        sessionId: '84920147',
+        sessionTitle: 'Weekend Sci-Fi & Blockbuster Night',
+        activeMovieIds: SAMPLE_EMAIL_MOVIES.map((m) => m.id),
+        activeGenres: ['Sci-Fi', 'Action'],
+        voters: [],
+        ballots: {},
+        status: 'voting',
+        maxVotesPerVoter: 3,
+        isPublic: true,
+        deadlockRule: 'random',
+        voteWeightMode: 'ranked',
+        ageRatingLimit: 'ALL',
+        yearFilter: 'ALL',
+        genreFilter: [],
+        streamingFilter: [],
+        movieAdditionMode: 'voter_suggestions',
+        maxSuggestionsPerVoter: 2,
+        creatorName: 'Brian',
+        creatorEmail: targetEmail,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+    }
+
+    if (mode === 'crowned') {
+      const winner = contenders[0] || SAMPLE_EMAIL_MOVIES[0];
+      const leaderboard = contenders.slice(0, 3).map((m, idx) => ({
+        movie: m,
+        votes: 8 - idx * 2,
+        points: 8 - idx * 2,
+        totalVoters: 6,
+        voterNames: ['Brian', 'Suzi', 'Michelle'],
+      }));
+
+      await sendSessionWinnerCrownedEmail({
+        session,
+        winnerMovie: winner,
+        leaderboard,
+      });
+
+      return NextResponse.json({
+        ok: true,
+        mode: 'crowned',
+        message: `Rich winner crowned email sent to ${targetEmail}`,
+        sessionTitle: session.sessionTitle,
+        winnerTitle: winner.title,
+      });
+    }
+
+    // Default: send rich session launched template
+    await sendSessionLaunchedEmail({
+      session,
+      contenders,
     });
-
-    console.info(`[Email Diagnostic] Test email sent successfully to ${targetEmail}. MessageId: ${info.messageId}`);
 
     return NextResponse.json({
       ok: true,
-      message: `Test email sent successfully to ${targetEmail}`,
-      messageId: info.messageId,
-      accepted: info.accepted,
-      response: info.response,
+      mode: 'launched',
+      message: `Rich session launched email sent to ${targetEmail}`,
+      sessionTitle: session.sessionTitle,
+      movieCount: contenders.length,
+      sampleMovies: contenders.slice(0, 6).map((m) => ({ title: m.title, year: m.year, rating: m.tmdbRating })),
     });
   } catch (error: any) {
     console.error('[Email Diagnostic] Test email failed:', error);

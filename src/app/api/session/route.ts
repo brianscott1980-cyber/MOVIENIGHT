@@ -106,7 +106,9 @@ export async function POST(request: Request) {
       effectiveSessionId = data.session.sessionId;
       // Asynchronously notify host and admin that voting has started (non-blocking)
       if (data?.session) {
-        void sendSessionLaunchedEmail({ session: data.session });
+        const activeIds = new Set(data.session.activeMovieIds || []);
+        const contenders = (data.allAvailableMovies || []).filter((m) => activeIds.has(m.id));
+        void sendSessionLaunchedEmail({ session: data.session, contenders });
       }
     } else if (action === 'pause') {
       const { pauseSession } = await import('@/lib/storage');
