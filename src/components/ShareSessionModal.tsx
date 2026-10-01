@@ -136,10 +136,7 @@ export function ShareSessionModal({
               </div>
             </div>
             <div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/25">
-                Boost Engagement
-              </span>
-              <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight mt-1">
+              <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
                 Share to Socials
               </h3>
             </div>
