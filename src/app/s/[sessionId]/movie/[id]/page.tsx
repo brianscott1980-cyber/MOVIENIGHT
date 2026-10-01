@@ -22,7 +22,9 @@ import {
   DollarSign,
   Play,
   Check,
+  Share2,
 } from 'lucide-react';
+import { ShareSessionModal } from '@/components/ShareSessionModal';
 
 export default function SessionMovieDetailPage({
   params,
@@ -37,6 +39,7 @@ export default function SessionMovieDetailPage({
 
   const { currentVoter, isVoted, toggleMovieVote, hasReachedVoteLimit, isVotePending, sessionData, isLoading } = useVoter();
   const [isPlaying, setIsPlaying] = useState(shouldAutoPlay);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const votersWhoVoted = React.useMemo(() => {
     if (!id) return [];
@@ -119,6 +122,14 @@ export default function SessionMovieDetailPage({
           </Link>
 
           <div className="flex items-center gap-1.5 sm:gap-2">
+            <button
+              onClick={() => setIsShareModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-800 bg-slate-900 text-amber-300 hover:text-white hover:border-slate-700 text-xs font-semibold transition active:scale-95 shadow"
+              title="Share session invite on Socials"
+            >
+              <Share2 className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">Share Session</span>
+            </button>
             {prevMovie && (
               <Link
                 href={`/s/${sessionId}/movie/${prevMovie.id}`}
@@ -142,6 +153,14 @@ export default function SessionMovieDetailPage({
             )}
           </div>
         </div>
+
+        <ShareSessionModal
+          isOpen={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+          sessionId={sessionId}
+          sessionTitle={sessionData?.session?.sessionTitle}
+          isLocked={sessionData?.session?.status === 'locked'}
+        />
       </div>
 
       <main className="max-w-6xl mx-auto px-3 sm:px-6 space-y-6 sm:space-y-8">

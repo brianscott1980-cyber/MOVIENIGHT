@@ -1,9 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { Sparkles, EyeOff, Tv, Settings, Eye, Users } from 'lucide-react';
+import { Sparkles, EyeOff, Tv, Settings, Eye, Users, Share2 } from 'lucide-react';
 import { SessionCopyActions } from '@/components/SessionCopyActions';
+import { ShareSessionModal } from '@/components/ShareSessionModal';
 import { VoterRollCall } from '@/components/VoterRollCall';
 import { SessionConfig } from '@/types';
 
@@ -22,6 +23,7 @@ export function BallotHeroHeader({
   votedCount,
   isHost,
 }: BallotHeroHeaderProps) {
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const isLocked = session.status === 'locked';
   const isSecret = session.isPublic === false;
   const formattedCode =
@@ -40,7 +42,11 @@ export function BallotHeroHeader({
                 <span>
                   🍿 Code: <strong className="font-mono">{formattedCode}</strong>
                 </span>
-                <SessionCopyActions sessionId={sessionId} />
+                <SessionCopyActions
+                  sessionId={sessionId}
+                  sessionTitle={session.sessionTitle}
+                  isLocked={isLocked}
+                />
               </div>
 
               {isLocked ? (
@@ -95,6 +101,14 @@ export function BallotHeroHeader({
 
           {/* Quick Links - Share width on mobile */}
           <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 w-full md:w-auto">
+            <button
+              onClick={() => setIsShareModalOpen(true)}
+              className="flex-1 md:flex-initial flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-amber-300 hover:text-white font-semibold text-xs sm:text-sm transition shadow-lg active:scale-95"
+              title="Share session invite on Socials, WhatsApp, X, Telegram..."
+            >
+              <Share2 className="w-4 h-4 text-amber-400" />
+              <span>Share</span>
+            </button>
             <Link
               href={`/s/${sessionId}/live`}
               className="flex-1 md:flex-initial flex items-center justify-center gap-2 sm:gap-2.5 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-bold text-xs sm:text-sm shadow-xl shadow-red-600/20 transition transform hover:-translate-y-0.5 glow-red"
@@ -113,6 +127,14 @@ export function BallotHeroHeader({
             )}
           </div>
         </div>
+
+        <ShareSessionModal
+          isOpen={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+          sessionId={sessionId}
+          sessionTitle={session.sessionTitle}
+          isLocked={isLocked}
+        />
 
         {/* Voter Roll Call Attendance Strip */}
         <div className="mt-8">

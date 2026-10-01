@@ -18,8 +18,10 @@ import {
   Film,
   RotateCcw,
   Eye,
+  Share2,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { ShareSessionModal } from '@/components/ShareSessionModal';
 
 export default function SessionLivePage() {
   const { sessionId, isHost } = useVoter();
@@ -28,6 +30,7 @@ export default function SessionLivePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isWinnerRevealed, setIsWinnerRevealed] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const fetchSession = useCallback(async () => {
     try {
@@ -284,7 +287,11 @@ export default function SessionLivePage() {
 
               <div className="h-8 inline-flex items-center gap-1.5 px-3 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs font-mono font-black tracking-widest">
                 <span>{sessionId.replace(/\D/g, '').length === 8 ? `${sessionId.slice(0, 4)} ${sessionId.slice(4)}` : sessionId}</span>
-                <SessionCopyActions sessionId={sessionId} />
+                <SessionCopyActions
+                  sessionId={sessionId}
+                  sessionTitle={data?.session?.sessionTitle}
+                  isLocked={data?.session?.status === 'locked'}
+                />
               </div>
 
               {data?.session?.viewCount !== undefined && data.session.viewCount > 0 && (
@@ -371,6 +378,15 @@ export default function SessionLivePage() {
             )}
 
             <button
+              onClick={() => setIsShareModalOpen(true)}
+              className="p-2.5 sm:px-3.5 rounded-xl border border-slate-800 bg-slate-900/80 hover:bg-slate-800 text-amber-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition active:scale-95 shadow"
+              title="Share session invite on Socials, WhatsApp, X, Telegram..."
+            >
+              <Share2 className="w-4 h-4 text-amber-400" />
+              <span className="hidden sm:inline">Share</span>
+            </button>
+
+            <button
               onClick={toggleFullscreen}
               className="p-2.5 rounded-xl border border-slate-800 bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-white transition active:scale-95"
               title="Toggle Fullscreen"
@@ -387,6 +403,14 @@ export default function SessionLivePage() {
             </Link>
           </div>
         </div>
+
+        <ShareSessionModal
+          isOpen={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+          sessionId={sessionId}
+          sessionTitle={data?.session?.sessionTitle}
+          isLocked={data?.session?.status === 'locked'}
+        />
       </section>
 
       <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-6 sm:pt-8 space-y-6 sm:space-y-8">

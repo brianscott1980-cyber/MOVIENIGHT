@@ -637,7 +637,11 @@ export default function ExploreSessionsPage() {
                       <span className="inline-flex items-center gap-1 text-xs font-mono font-black px-2.5 py-1 rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/30">
                         <Hash className="w-3.5 h-3.5 text-amber-400" />
                         <span>{formattedPin}</span>
-                        <SessionCopyActions sessionId={session.sessionId} />
+                        <SessionCopyActions
+                          sessionId={session.sessionId}
+                          sessionTitle={session.sessionTitle}
+                          isLocked={isLocked}
+                        />
                       </span>
 
                       <div className="flex items-center gap-1.5">

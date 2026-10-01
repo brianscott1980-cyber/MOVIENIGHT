@@ -201,3 +201,18 @@ export function trackPlayTrailer({
     youtube_trailer_id: youtubeTrailerId,
   });
 }
+
+/** Track sharing a session to social platforms or copying link/code */
+export function trackShareSession({
+  sessionId,
+  platform,
+}: {
+  sessionId: string;
+  platform: 'native_share' | 'whatsapp' | 'x' | 'facebook' | 'telegram' | 'reddit' | 'copy_link' | 'copy_code';
+}) {
+  trackEvent('share_session', {
+    session_id: sessionId,
+    platform,
+  });
+}
+
