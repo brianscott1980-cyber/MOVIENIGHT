@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Share2,
   X,
@@ -24,6 +25,12 @@ export function ShareSessionModal({
   sessionTitle,
   isLocked = false,
 }: ShareSessionModalProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   if (!isOpen) return null;
 
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
@@ -33,7 +40,7 @@ export function ShareSessionModal({
       ? `${sessionId.slice(0, 4)} ${sessionId.slice(4)}`
       : sessionId;
 
-  const displayTitle = sessionTitle || `Movie Night #${sessionId}`;
+  const displayTitle = sessionTitle || `Movie Night ${sessionId}`;
   const shareText = isLocked
     ? `🏆 Check out the crowned winner and results for ${displayTitle} on MovieNight! Code: ${formattedCode}`
     : `🍿 Cast your vote on our living room movie ballot for ${displayTitle}! Code: ${formattedCode}`;
@@ -118,13 +125,15 @@ export function ShareSessionModal({
 
   const canNativeShare = typeof navigator !== 'undefined' && Boolean(navigator.share);
 
-  return (
+  if (!mounted || typeof document === 'undefined') return null;
+
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/85 backdrop-blur-md animate-fade-in"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-slate-950/85 backdrop-blur-md animate-fade-in"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-lg md:max-w-3xl rounded-3xl border-2 border-amber-500/30 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 p-6 sm:p-8 shadow-2xl shadow-amber-950/20 space-y-6 text-white"
+        className="relative w-full max-w-3xl rounded-3xl border-2 border-amber-500/30 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 p-6 sm:p-8 shadow-2xl shadow-amber-950/20 space-y-6 text-white"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Header */}
@@ -157,7 +166,7 @@ export function ShareSessionModal({
               Session Contenders &amp; Ballot
             </span>
             <span className="text-xs font-mono font-bold text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-lg">
-              #{formattedCode}
+              {formattedCode}
             </span>
           </div>
           <div className="text-base sm:text-lg font-black text-white line-clamp-1">
@@ -217,6 +226,7 @@ export function ShareSessionModal({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

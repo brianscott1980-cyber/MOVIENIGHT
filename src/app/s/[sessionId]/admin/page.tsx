@@ -408,7 +408,7 @@ export default function SessionAdminPage() {
       return;
     }
 
-    const launchTitle = sessionTitle.trim() || sessionData?.session?.sessionTitle?.trim() || `Movie Night #${sessionId}`;
+    const launchTitle = sessionTitle.trim() || sessionData?.session?.sessionTitle?.trim() || `Movie Night ${sessionId}`;
 
     setIsLaunching(true);
     try {
@@ -711,7 +711,7 @@ export default function SessionAdminPage() {
   const isVotingLive = sessionData?.session?.status === 'voting';
   const isPaused = sessionData?.session?.status === 'paused';
   const isLocked = sessionData?.session?.status === 'locked';
-  const effectiveTitle = sessionTitle.trim() || sessionData?.session?.sessionTitle?.trim() || `Movie Night #${sessionId}`;
+  const effectiveTitle = sessionTitle.trim() || sessionData?.session?.sessionTitle?.trim() || `Movie Night ${sessionId}`;
   const isReadyToStart = selectedMovieIds.length > 0;
 
   return (

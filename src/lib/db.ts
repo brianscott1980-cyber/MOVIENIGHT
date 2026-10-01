@@ -674,7 +674,7 @@ export async function computeSessionResponseFromDB(rawSessionId?: string): Promi
   // If session doesn't exist yet, auto-provision only default main session, otherwise return expired/not found
   if (sessionRes.rows.length === 0) {
     if (!rawSessionId || rawSessionId === 'session-main') {
-      const formattedTitle = `Movie Night #${formatSessionCode(sessionId)}`;
+      const formattedTitle = `Movie Night ${formatSessionCode(sessionId)}`;
       await initSession(pool, sessionId, formattedTitle);
       sessionRes = await pool.query('SELECT * FROM sessions WHERE session_id = $1', [sessionId]);
     } else {
@@ -939,7 +939,7 @@ export async function addVoterToSessionInDB(
     [sessionId]
   );
   if (sessionCheck.rows.length === 0) {
-    await initSession(pool, sessionId, `Movie Night #${formatSessionCode(sessionId)}`);
+    await initSession(pool, sessionId, `Movie Night ${formatSessionCode(sessionId)}`);
   }
   const isSessionLocked = sessionCheck.rows.length > 0 && sessionCheck.rows[0].status === 'locked';
 

@@ -17,7 +17,7 @@ export default async function Image({
   const { sessionId } = await params;
   const data = await getSessionOgMetadata(sessionId);
 
-  const sessionTitle = data?.title || `Movie Night #${sessionId}`;
+  const sessionTitle = data?.title || `Movie Night ${sessionId}`;
   const topMovie = data?.topMovie;
   const movieCount = data?.movieCount ?? 0;
 
@@ -114,7 +114,7 @@ export default async function Image({
                 letterSpacing: '1px',
               }}
             >
-              Active Voting Session #{sessionId}
+              Active Voting Session {sessionId}
             </span>
             {movieCount > 0 && (
               <span

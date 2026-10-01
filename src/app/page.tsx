@@ -634,8 +634,7 @@ export default function ExploreSessionsPage() {
                   <div>
                     {/* Header Row with Mentimeter-Style PIN Badge */}
                     <div className="flex items-center justify-between gap-2 mb-3">
-                      <span className="inline-flex items-center gap-1 text-xs font-mono font-black px-2.5 py-1 rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                        <Hash className="w-3.5 h-3.5 text-amber-400" />
+                      <span className="h-7 inline-flex items-center gap-1.5 text-xs font-mono font-black px-2.5 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/30">
                         <span>{formattedPin}</span>
                         <SessionCopyActions
                           sessionId={session.sessionId}
@@ -647,7 +646,7 @@ export default function ExploreSessionsPage() {
                       <div className="flex items-center gap-1.5">
                         {session.isPublic === false && (
                           <span
-                            className="text-[10px] uppercase tracking-wider font-extrabold px-2.5 py-0.5 rounded-full border bg-purple-950/70 text-purple-300 border-purple-500/40"
+                            className="h-7 inline-flex items-center text-[10px] uppercase tracking-wider font-extrabold px-2.5 rounded-lg border bg-purple-950/70 text-purple-300 border-purple-500/40"
                             title="Private session - invite code or host only"
                           >
                             🔒 Private
@@ -655,7 +654,7 @@ export default function ExploreSessionsPage() {
                         )}
 
                         <span
-                          className={`text-[10px] uppercase tracking-wider font-extrabold px-2.5 py-0.5 rounded-full border ${
+                          className={`h-7 inline-flex items-center text-[10px] uppercase tracking-wider font-extrabold px-2.5 rounded-lg border ${
                             session.status === 'setup'
                               ? 'bg-amber-950/70 text-amber-300 border-amber-500/40'
                               : session.status === 'paused'

@@ -94,7 +94,7 @@ export function BallotHeroHeader({
                 <>Cast Your Vote for <br /></>
               )}
               <span className="bg-gradient-to-r from-amber-400 via-red-400 to-rose-500 bg-clip-text text-transparent">
-                {session.sessionTitle || `Movie Night #${sessionId}`}
+                {session.sessionTitle || `Movie Night ${sessionId}`}
               </span>
             </h1>
           </div>

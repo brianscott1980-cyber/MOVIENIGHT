@@ -50,7 +50,7 @@ export function Navbar() {
               className="px-2 py-1 rounded-lg bg-slate-900 border border-slate-800 text-[11px] font-mono font-bold text-amber-400 hover:border-amber-500/50 hover:bg-slate-800 transition"
               title="Session Code"
             >
-              #{sessionId}
+              {sessionId}
             </Link>
             <SessionCopyActions sessionId={sessionId} />
             </span>

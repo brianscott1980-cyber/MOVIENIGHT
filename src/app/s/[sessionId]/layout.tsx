@@ -12,7 +12,7 @@ export async function generateMetadata({
   const { sessionId } = await params;
   const data = await getSessionOgMetadata(sessionId);
 
-  const title = data?.title ? `🍿 ${data.title} | MovieNight` : `🍿 Movie Night #${sessionId}`;
+  const title = data?.title ? `🍿 ${data.title} | MovieNight` : `🍿 Movie Night ${sessionId}`;
   const movieCount = data?.movieCount ?? 0;
   const countText = movieCount > 0 ? ` featuring ${movieCount} contenders` : '';
   const description = `Join the voting session${countText}! Cast your votes, watch official trailers, and track the live podium standings in real time.`;

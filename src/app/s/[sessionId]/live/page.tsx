@@ -316,7 +316,7 @@ export default function SessionLivePage() {
 
             <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white flex items-center justify-center md:justify-start gap-2 sm:gap-3">
               <span>🍿</span>
-              <span>{data?.session?.sessionTitle || `Movie Night #${sessionId}`} {data?.session?.status === 'locked' ? 'Outcome' : 'Tally'}</span>
+              <span>{data?.session?.sessionTitle || `Movie Night ${sessionId}`} {data?.session?.status === 'locked' ? 'Outcome' : 'Tally'}</span>
             </h1>
             <p className="text-slate-400 text-xs sm:text-sm mt-1">
               {data?.session?.status === 'locked'
