@@ -124,7 +124,7 @@ export function ShareSessionModal({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-lg rounded-3xl border-2 border-amber-500/30 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 p-6 sm:p-8 shadow-2xl shadow-amber-950/20 space-y-6 text-white"
+        className="relative w-full max-w-lg md:max-w-3xl rounded-3xl border-2 border-amber-500/30 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 p-6 sm:p-8 shadow-2xl shadow-amber-950/20 space-y-6 text-white"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Header */}
@@ -174,7 +174,7 @@ export function ShareSessionModal({
             Choose Platform:
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             {socialChannels.map((channel) => (
               <button
                 key={channel.name}
