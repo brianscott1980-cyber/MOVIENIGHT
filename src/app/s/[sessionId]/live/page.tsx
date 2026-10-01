@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ShareSessionModal } from '@/components/ShareSessionModal';
+import { ConfirmModal } from '@/components/ConfirmModal';
 import { recordSessionViewActivity } from '@/lib/sessionActivity';
 
 export default function SessionLivePage() {
@@ -32,6 +33,7 @@ export default function SessionLivePage() {
   const [isWinnerRevealed, setIsWinnerRevealed] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 
   const fetchSession = useCallback(async () => {
     try {
@@ -174,8 +176,11 @@ export default function SessionLivePage() {
     }
   };
 
-  const handleResetVotes = async () => {
-    if (!confirm('Are you sure you want to reset all votes for this movie night?')) return;
+  const handleResetVotes = () => {
+    setIsResetModalOpen(true);
+  };
+
+  const executeResetVotes = async () => {
     setIsResetting(true);
     try {
       const res = await fetch('/api/session', {
@@ -192,6 +197,7 @@ export default function SessionLivePage() {
         const updated = await res.json();
         setData(updated);
         setIsWinnerRevealed(false);
+        setIsResetModalOpen(false);
       }
     } catch (err) {
       console.error('Failed to reset votes:', err);
@@ -663,6 +669,18 @@ export default function SessionLivePage() {
           </div>
         </div>
       </main>
+
+      {/* HTML Confirm Modal for Resetting Votes */}
+      <ConfirmModal
+        isOpen={isResetModalOpen}
+        onClose={() => setIsResetModalOpen(false)}
+        onConfirm={executeResetVotes}
+        title="Reset All Votes?"
+        description="Are you sure you want to reset all votes for this movie night? This will clear the podium outcome."
+        confirmText="Reset Votes"
+        variant="danger"
+        isLoading={isResetting}
+      />
     </div>
   );
 }

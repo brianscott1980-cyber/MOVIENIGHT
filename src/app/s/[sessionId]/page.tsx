@@ -8,6 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Movie } from '@/types';
 import { MovieDetailModal } from '@/components/MovieDetailModal';
 import { AddCustomMovieModal } from '@/components/AddCustomMovieModal';
+import { ConfirmModal } from '@/components/ConfirmModal';
 import { trackAdminAction } from '@/lib/analytics';
 
 // Sub-screen views
@@ -29,6 +30,8 @@ export default function SessionVotingPage() {
   const [randomSeedMap, setRandomSeedMap] = useState<Record<string, number>>({});
   const [modalConfig, setModalConfig] = useState<{ movie: Movie; autoPlay: boolean } | null>(null);
   const [isSuggestModalOpen, setIsSuggestModalOpen] = useState(false);
+  const [isCloseVoteModalOpen, setIsCloseVoteModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   // Trigger suggest modal if requested by pending action signal
   useEffect(() => {
@@ -191,8 +194,11 @@ export default function SessionVotingPage() {
     }
   };
 
-  const handleCloseVote = async () => {
-    if (!confirm('Are you sure you want to close voting? Anyone joining will no longer be able to vote and the podium outcome will be shown.')) return;
+  const handleCloseVote = () => {
+    setIsCloseVoteModalOpen(true);
+  };
+
+  const executeCloseVote = async () => {
     setIsClosingVote(true);
     try {
       const topMovie = sessionData?.leaderboard?.[0]?.movie;
@@ -213,6 +219,7 @@ export default function SessionVotingPage() {
           action: 'close',
           sessionTitle: sessionData?.session?.sessionTitle,
         });
+        setIsCloseVoteModalOpen(false);
         await refreshSession();
       }
     } catch (err) {
@@ -250,8 +257,11 @@ export default function SessionVotingPage() {
     }
   };
 
-  const handleDeleteSession = async () => {
-    if (!confirm('Are you sure you want to delete this session? This action cannot be undone.')) return;
+  const handleDeleteSession = () => {
+    setIsDeleteModalOpen(true);
+  };
+
+  const executeDeleteSession = async () => {
     setIsDeleting(true);
     try {
       const res = await fetch('/api/session', {
@@ -270,6 +280,7 @@ export default function SessionVotingPage() {
           action: 'delete_session',
           sessionTitle: sessionData?.session?.sessionTitle,
         });
+        setIsDeleteModalOpen(false);
         router.replace('/');
       }
     } catch (err) {
@@ -462,6 +473,30 @@ export default function SessionVotingPage() {
             await toggleMovieVote(movie.id);
           }
         }}
+      />
+
+      {/* HTML Confirm Modal for Closing Voting */}
+      <ConfirmModal
+        isOpen={isCloseVoteModalOpen}
+        onClose={() => setIsCloseVoteModalOpen(false)}
+        onConfirm={executeCloseVote}
+        title="Close Voting?"
+        description="Are you sure you want to close voting? Anyone joining will no longer be able to vote and the podium outcome will be shown."
+        confirmText="Close Voting"
+        variant="warning"
+        isLoading={isClosingVote}
+      />
+
+      {/* HTML Confirm Modal for Deleting Session */}
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={executeDeleteSession}
+        title="Delete Session?"
+        description="Are you sure you want to delete this session? This action cannot be undone."
+        confirmText="Delete"
+        variant="danger"
+        isLoading={isDeleting}
       />
     </div>
   );

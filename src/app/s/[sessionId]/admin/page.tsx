@@ -13,6 +13,7 @@ import {
 import { matchesMovieCriteria, getSetupMovieChoices } from '@/lib/movieFilters';
 import { Voter, Movie, AgeRatingLimit, DeadlockRule } from '@/types';
 import { AddCustomMovieModal } from '@/components/AddCustomMovieModal';
+import { ConfirmModal } from '@/components/ConfirmModal';
 import {
   trackSettingsChange,
   trackAdminAction,
@@ -39,6 +40,12 @@ export default function SessionAdminPage() {
   const isSetupMode = sessionData?.session?.status === 'setup';
   // Setup mode starts on Step 3 (Stage 1: Curate Movies); settings mode starts on Step 1 (Naming & Rules)
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(3);
+
+  // HTML Confirmation & Alert Modal States
+  const [isCloseSessionModalOpen, setIsCloseSessionModalOpen] = useState(false);
+  const [isDeleteSessionModalOpen, setIsDeleteSessionModalOpen] = useState(false);
+  const [isResetVotesModalOpen, setIsResetVotesModalOpen] = useState(false);
+  const [alertConfig, setAlertConfig] = useState<{ title: string; message: string; variant?: 'info' | 'warning' | 'danger' } | null>(null);
 
   // Step 1: Session Naming & General Rules
   const [sessionTitle, setSessionTitle] = useState('');
@@ -403,7 +410,11 @@ export default function SessionAdminPage() {
 
   const handleLaunchSession = async () => {
     if (selectedMovieIds.length === 0) {
-      alert('You must select at least 1 movie before starting voting.');
+      setAlertConfig({
+        title: 'Lineup Required',
+        message: 'You must select at least 1 movie before starting voting.',
+        variant: 'warning',
+      });
       setCurrentStep(4);
       return;
     }
@@ -509,8 +520,11 @@ export default function SessionAdminPage() {
     }
   };
 
-  const handleCloseSession = async () => {
-    if (!confirm('Are you sure you want to close voting? Participants will no longer be able to vote and anyone joining will see the podium outcome.')) return;
+  const handleCloseSession = () => {
+    setIsCloseSessionModalOpen(true);
+  };
+
+  const executeCloseSession = async () => {
     setIsClosingSession(true);
     try {
       const topMovie = sessionData?.leaderboard?.[0]?.movie;
@@ -531,6 +545,7 @@ export default function SessionAdminPage() {
           action: 'close',
           sessionTitle,
         });
+        setIsCloseSessionModalOpen(false);
         await refreshSession();
       }
     } catch (err) {
@@ -623,8 +638,11 @@ export default function SessionAdminPage() {
     }
   };
 
-  const handleDeleteSession = async () => {
-    if (!confirm('Are you sure you want to delete this session? This action cannot be undone.')) return;
+  const handleDeleteSession = () => {
+    setIsDeleteSessionModalOpen(true);
+  };
+
+  const executeDeleteSession = async () => {
     try {
       const res = await fetch('/api/session', {
         method: 'POST',
@@ -638,6 +656,7 @@ export default function SessionAdminPage() {
       });
       if (res.ok) {
         trackAdminAction({ sessionId, action: 'delete_session', sessionTitle });
+        setIsDeleteSessionModalOpen(false);
         router.push('/');
       }
     } catch (err) {
@@ -645,11 +664,11 @@ export default function SessionAdminPage() {
     }
   };
 
-  const handleResetVotes = async () => {
-    if (!confirm('This will wipe all submitted votes for this session so everyone can vote anew. Continue?')) {
-      return;
-    }
+  const handleResetVotes = () => {
+    setIsResetVotesModalOpen(true);
+  };
 
+  const executeResetVotes = async () => {
     try {
       const res = await fetch('/api/session', {
         method: 'POST',
@@ -663,8 +682,13 @@ export default function SessionAdminPage() {
       });
       if (res.ok) {
         trackAdminAction({ sessionId, action: 'reset_votes' });
+        setIsResetVotesModalOpen(false);
         await refreshSession();
-        alert('All ballots have been cleared!');
+        setAlertConfig({
+          title: 'Ballots Cleared',
+          message: 'All ballots have been cleared! Participants can now vote anew.',
+          variant: 'info',
+        });
       }
     } catch (err) {
       console.error('Failed to reset votes:', err);
@@ -905,6 +929,52 @@ export default function SessionAdminPage() {
           }
           await refreshSession();
         }}
+      />
+
+      {/* HTML Confirm Modal for Closing Session */}
+      <ConfirmModal
+        isOpen={isCloseSessionModalOpen}
+        onClose={() => setIsCloseSessionModalOpen(false)}
+        onConfirm={executeCloseSession}
+        title="Close Voting?"
+        description="Are you sure you want to close voting? Participants will no longer be able to vote and anyone joining will see the podium outcome."
+        confirmText="Close Voting"
+        variant="warning"
+        isLoading={isClosingSession}
+      />
+
+      {/* HTML Confirm Modal for Deleting Session */}
+      <ConfirmModal
+        isOpen={isDeleteSessionModalOpen}
+        onClose={() => setIsDeleteSessionModalOpen(false)}
+        onConfirm={executeDeleteSession}
+        title="Delete Session?"
+        description="Are you sure you want to delete this session? This action cannot be undone."
+        confirmText="Delete Session"
+        variant="danger"
+      />
+
+      {/* HTML Confirm Modal for Resetting Votes */}
+      <ConfirmModal
+        isOpen={isResetVotesModalOpen}
+        onClose={() => setIsResetVotesModalOpen(false)}
+        onConfirm={executeResetVotes}
+        title="Reset All Votes?"
+        description="This will wipe all submitted votes for this session so everyone can vote anew. Continue?"
+        confirmText="Reset Votes"
+        variant="danger"
+      />
+
+      {/* HTML Alert Modal */}
+      <ConfirmModal
+        isOpen={Boolean(alertConfig)}
+        onClose={() => setAlertConfig(null)}
+        onConfirm={() => setAlertConfig(null)}
+        title={alertConfig?.title || 'Notice'}
+        description={alertConfig?.message || ''}
+        isAlert
+        confirmText="OK"
+        variant={alertConfig?.variant || 'info'}
       />
     </div>
   );
