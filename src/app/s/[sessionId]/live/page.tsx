@@ -233,7 +233,7 @@ export default function SessionLivePage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white pb-24">
+    <div className="min-h-screen bg-slate-950 text-white pb-24 w-full max-w-[100vw] overflow-x-hidden">
       {/* Live Podium Header */}
       <section className="relative border-b border-amber-500/20 bg-gradient-to-b from-amber-500/10 via-slate-900 to-slate-950 px-4 py-6 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
@@ -361,9 +361,6 @@ export default function SessionLivePage() {
               Won with <strong className="text-amber-300">{top1.votes} {top1.votes === 1 ? 'vote' : 'votes'}</strong> across the group!
             </p>
             <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
-              <span className="text-xs px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold">
-                ⭐ {top1.movie.tmdbRating != null ? 'TMDB' : 'IMDb'} {(top1.movie.tmdbRating ?? top1.movie.imdbRating).toFixed(1)}
-              </span>
               <span className="text-xs px-3 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
                 {top1.movie.year}
               </span>
@@ -522,7 +519,6 @@ export default function SessionLivePage() {
                   <th className="py-2.5 px-3">Tally Rank</th>
                   <th className="py-2.5 px-4">Movie</th>
                   <th className="py-2.5 px-3">Genre</th>
-                  <th className="py-2.5 px-3">IMDb</th>
                   <th className="py-2.5 px-4 text-center">Total Votes</th>
                   <th className="py-2.5 px-4">Supporters</th>
                 </tr>
@@ -562,10 +558,6 @@ export default function SessionLivePage() {
                       <td className="py-2.5 px-3 text-xs text-slate-300 whitespace-nowrap">
                         <span>{genreMeta.emoji}</span>
                         <span className="ml-1 text-slate-400 hidden sm:inline">{genreMeta.label}</span>
-                      </td>
-
-                      <td className="py-2.5 px-3 font-bold text-xs text-yellow-400 whitespace-nowrap">
-                        ⭐ {(item.movie.tmdbRating ?? item.movie.imdbRating).toFixed(1)}
                       </td>
 
                       <td className="py-2.5 px-4 text-center whitespace-nowrap">

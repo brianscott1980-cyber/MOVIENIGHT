@@ -378,14 +378,28 @@ export default function SessionMovieDetailPage({
                   <span>Starring Cast</span>
                 </div>
                 <div className="flex flex-wrap gap-1.5 mt-1">
-                  {movie.cast.map((actor, idx) => (
-                    <span
-                      key={idx}
-                      className="text-xs px-2.5 py-0.5 rounded-lg bg-slate-800 text-slate-200 border border-slate-700"
-                    >
-                      {actor}
-                    </span>
-                  ))}
+                  {movie.cast.map((actor, idx) => {
+                    const member = (movie.castMembers || []).find(
+                      (m) => m.name.toLowerCase() === actor.toLowerCase()
+                    );
+                    const profileUrl = member?.profileUrl;
+                    return (
+                      <span
+                        key={idx}
+                        className="inline-flex items-center gap-1.5 text-xs py-0.5 px-2.5 rounded-lg bg-slate-800 text-slate-200 border border-slate-700"
+                      >
+                        {profileUrl && (
+                          <img
+                            src={profileUrl}
+                            alt={actor}
+                            loading="lazy"
+                            className="w-4 h-4 rounded-full object-cover border border-amber-500/20"
+                          />
+                        )}
+                        <span>{actor}</span>
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
             </div>

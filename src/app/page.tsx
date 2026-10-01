@@ -346,7 +346,7 @@ export default function ExploreSessionsPage() {
   }, [visibleSessions, filterTab, searchQuery, isUserSessionHost]);
 
   return (
-    <div className="min-h-screen bg-[#080b12] text-slate-100 pb-24">
+    <div className="min-h-screen bg-[#080b12] text-slate-100 pb-24 w-full max-w-[100vw] overflow-x-hidden">
       {/* Top Header */}
       <header className="sticky top-0 z-40 w-full border-b border-slate-800/80 bg-slate-950/95 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2 sm:gap-4">

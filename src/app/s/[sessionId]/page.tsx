@@ -360,7 +360,7 @@ export default function SessionVotingPage() {
   const maxVotes = sessionData?.session?.maxVotesPerVoter ?? 0;
 
   return (
-    <div className="min-h-screen pb-12">
+    <div className="min-h-screen pb-12 w-full max-w-[100vw] overflow-x-hidden">
       {/* Prominent Host Action Banner */}
       {isHost && sessionData?.session && (
         <BallotHostBanner

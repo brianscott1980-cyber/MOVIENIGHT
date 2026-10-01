@@ -269,6 +269,7 @@ export async function addMovieToCatalogueIfMissingInDB(
       genreEmoji,
       director,
       cast,
+      castMembers: input.castMembers,
       synopsis,
       posterUrl,
       backdropUrl: input.backdropUrl?.trim() || undefined,
@@ -329,7 +330,7 @@ async function getAvailableMovies(sessionId?: string): Promise<Movie[]> {
     runtime: string | null;
     rated: string | null;
     streaming_sources: string[] | null;
-    metadata: Pick<Movie, 'tmdbId' | 'tmdbRating' | 'watchProvidersUrl' | 'watchRegion' | 'addedByVoterId'>;
+    metadata: Pick<Movie, 'tmdbId' | 'tmdbRating' | 'watchProvidersUrl' | 'watchRegion' | 'addedByVoterId' | 'castMembers'>;
   }>(
     'SELECT * FROM custom_movies WHERE $1::text IS NULL OR session_id = $1 OR session_id IS NULL ORDER BY created_at DESC',
     [sessionId || null]
@@ -347,6 +348,7 @@ async function getAvailableMovies(sessionId?: string): Promise<Movie[]> {
     genreEmoji: r.genre_emoji || '🎬',
     director: r.director || 'Unknown',
     cast: r.cast_list || [],
+    castMembers: r.metadata?.castMembers || undefined,
     synopsis: r.synopsis || '',
     youtubeTrailerId: r.youtube_trailer_id || '',
     posterUrl: r.poster_url,
@@ -1341,8 +1343,14 @@ export async function addCustomMovieToDB(
   const runtimeStr = typeof input.runtime === 'number' ? `${input.runtime} min` : input.runtime || '';
   const ratedStr = input.ageRating || input.rated || '';
   const streamingSources = (input.streamingSources || []).map(normalizeMovieSource);
-  const metadata = { tmdbId: input.tmdbId, tmdbRating: input.tmdbRating,
-    watchProvidersUrl: input.watchProvidersUrl, watchRegion: input.watchRegion, addedByVoterId: input.addedByVoterId };
+  const metadata = {
+    tmdbId: input.tmdbId,
+    tmdbRating: input.tmdbRating,
+    watchProvidersUrl: input.watchProvidersUrl,
+    watchRegion: input.watchRegion,
+    addedByVoterId: input.addedByVoterId,
+    castMembers: input.castMembers,
+  };
 
   const client = await pool.connect();
   try {

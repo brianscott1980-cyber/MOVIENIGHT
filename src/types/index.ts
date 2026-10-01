@@ -1,3 +1,9 @@
+export interface CastMember {
+  name: string;
+  character?: string;
+  profileUrl?: string;
+}
+
 export interface Movie {
   addedByVoterId?: string;
   tmdbId?: number;
@@ -15,6 +21,7 @@ export interface Movie {
   genreEmoji: string;
   director: string;
   cast: string[];
+  castMembers?: CastMember[];
   synopsis: string;
   youtubeTrailerId: string;
   posterUrl: string;
@@ -42,6 +49,7 @@ export interface CustomMovieInput {
   genreEmoji?: string;
   director?: string;
   cast?: string[];
+  castMembers?: CastMember[];
   synopsis?: string;
   trailerId?: string;
   youtubeTrailerId?: string;

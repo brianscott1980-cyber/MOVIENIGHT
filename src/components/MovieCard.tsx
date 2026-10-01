@@ -235,15 +235,63 @@ export function MovieCard({ movie, onOpenDetails }: MovieCardProps) {
             {movie.title}
           </h3>
 
-          {/* Director & Lead Cast - hidden on mobile */}
+          {/* Cast with TMDB avatars */}
+          {movie.cast && movie.cast.length > 0 && (
+            <div className="mt-1.5 sm:mt-2">
+              <div className="flex items-center gap-1 sm:gap-1.5 overflow-hidden">
+                {movie.cast.slice(0, 3).map((actorName, idx) => {
+                  const member = (movie.castMembers || []).find(
+                    (m) => m.name.toLowerCase() === actorName.toLowerCase()
+                  );
+                  const profileUrl = member?.profileUrl;
+                  const initials = actorName
+                    .split(' ')
+                    .map((n) => n[0])
+                    .slice(0, 2)
+                    .join('')
+                    .toUpperCase();
+
+                  return (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-1 min-w-0 bg-slate-950/60 sm:bg-slate-800/40 rounded-full pr-1.5 sm:pr-2 border border-slate-800"
+                      title={actorName}
+                    >
+                      {profileUrl ? (
+                        <img
+                          src={profileUrl}
+                          alt={actorName}
+                          loading="lazy"
+                          className="w-4 h-4 sm:w-5 sm:h-5 rounded-full object-cover shrink-0 border border-amber-500/20"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            const sibling = e.currentTarget.nextElementSibling as HTMLElement;
+                            if (sibling) sibling.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <span
+                        className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-slate-800 text-[8px] sm:text-[9px] font-bold text-amber-300 flex items-center justify-center shrink-0 border border-slate-700 ${
+                          profileUrl ? 'hidden' : 'flex'
+                        }`}
+                      >
+                        {initials}
+                      </span>
+                      <span className="text-[10px] sm:text-[11px] text-slate-300 font-medium truncate max-w-[55px] sm:max-w-[70px]">
+                        {actorName.split(' ')[0]}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Director - visible on desktop */}
           <div className="hidden sm:block mt-1 text-xs text-slate-400 space-y-0.5">
             <p className="truncate">
               <span className="text-slate-400">Dir:</span>{' '}
               <span className="text-slate-200">{movie.director}</span>
-            </p>
-            <p className="truncate">
-              <span className="text-slate-400">Cast:</span>{' '}
-              <span className="text-slate-200">{movie.cast.slice(0, 3).join(', ')}</span>
             </p>
           </div>
 
