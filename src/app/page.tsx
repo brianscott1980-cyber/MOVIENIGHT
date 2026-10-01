@@ -433,7 +433,7 @@ export default function ExploreSessionsPage() {
 
           {/* Mentimeter-Style Quick Join Box */}
           <div className="w-full lg:w-auto shrink-0 self-stretch lg:self-center">
-            <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-amber-500/30 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 shadow-xl max-w-md w-full">
+            <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-amber-500/30 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 shadow-xl w-full sm:max-w-md">
               <div className="flex items-center gap-2 mb-2 sm:mb-3">
                 <Hash className="w-4 h-4 text-amber-400" />
                 <span className="text-xs uppercase font-extrabold tracking-wider text-amber-300">
