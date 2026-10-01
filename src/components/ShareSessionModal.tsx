@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
+import React from 'react';
 import {
   Share2,
   X,
@@ -9,6 +8,7 @@ import {
   Send,
 } from 'lucide-react';
 import { trackShareSession } from '@/lib/analytics';
+import { useHtmlDialog } from '@/hooks/useHtmlDialog';
 
 interface ShareSessionModalProps {
   isOpen: boolean;
@@ -25,11 +25,10 @@ export function ShareSessionModal({
   sessionTitle,
   isLocked = false,
 }: ShareSessionModalProps) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const { dialogRef, handleCancel, handleClick } = useHtmlDialog({
+    isOpen,
+    onClose,
+  });
 
   if (!isOpen) return null;
 
@@ -125,105 +124,104 @@ export function ShareSessionModal({
 
   const canNativeShare = typeof navigator !== 'undefined' && Boolean(navigator.share);
 
-  if (!mounted || typeof document === 'undefined') return null;
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-slate-950/85 backdrop-blur-md animate-fade-in"
-      onClick={onClose}
+  return (
+    <dialog
+      ref={dialogRef}
+      closedby="any"
+      onCancel={handleCancel}
+      onClick={handleClick}
+      aria-labelledby="share-session-title"
+      className="relative w-[calc(100%-2rem)] max-w-3xl rounded-3xl border-2 border-amber-500/30 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 p-6 sm:p-8 shadow-2xl shadow-amber-950/20 space-y-6 text-white m-auto outline-none"
     >
-      <div
-        className="relative w-full max-w-3xl rounded-3xl border-2 border-amber-500/30 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 p-6 sm:p-8 shadow-2xl shadow-amber-950/20 space-y-6 text-white"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Top Header */}
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-rose-500 p-0.5 shadow-lg shadow-amber-500/20 shrink-0">
-              <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center text-amber-400">
-                <Share2 className="w-6 h-6" />
-              </div>
-            </div>
-            <div>
-              <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                Share to Socials
-              </h3>
+      {/* Top Header */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-rose-500 p-0.5 shadow-lg shadow-amber-500/20 shrink-0">
+            <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center text-amber-400">
+              <Share2 className="w-6 h-6" />
             </div>
           </div>
+          <div>
+            <h3 id="share-session-title" className="text-xl sm:text-2xl font-black text-white tracking-tight">
+              Share to Socials
+            </h3>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close dialog"
+          className="p-2 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 transition"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* Featured Session Spotlight Banner */}
+      <div className="rounded-2xl border border-slate-800 bg-slate-950/90 p-4 shadow-inner">
+        <div className="flex items-center justify-end gap-2 mb-1.5">
+          <span className="text-xs font-mono font-bold text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-lg">
+            {formattedCode}
+          </span>
+        </div>
+        <div className="text-base sm:text-lg font-black text-white line-clamp-1">
+          {displayTitle}
+        </div>
+        <p className="text-xs text-slate-400 mt-1 line-clamp-2">
+          {shareText}
+        </p>
+      </div>
+
+      {/* Prominent Social Channels Grid */}
+      <div className="space-y-3">
+        <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
+          Choose Platform:
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          {socialChannels.map((channel) => (
+            <button
+              key={channel.name}
+              type="button"
+              onClick={channel.action}
+              className={`group relative flex items-center gap-3.5 p-3.5 rounded-2xl border border-slate-800/90 bg-slate-950/70 transition-all duration-200 active:scale-97 text-left shadow-lg ${channel.cardHover}`}
+            >
+              <div
+                className={`w-11 h-11 rounded-xl border flex items-center justify-center font-black text-xl shrink-0 transition-transform group-hover:scale-110 shadow-sm ${channel.iconBg}`}
+              >
+                {channel.iconNode || channel.iconText}
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center">
+                  <span className="text-sm font-bold text-white tracking-tight truncate">
+                    {channel.name}
+                  </span>
+                </div>
+                <div className="text-[11px] text-slate-400 font-medium">
+                  {channel.subtitle}
+                </div>
+              </div>
+
+              <ExternalLink className="w-4 h-4 text-slate-600 group-hover:text-amber-400 transition shrink-0" />
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Native Mobile Share Sheet Callout (Mobile/Tablet Only) */}
+      {canNativeShare && (
+        <div className="pt-1">
           <button
-            onClick={onClose}
-            aria-label="Close dialog"
-            className="p-2 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            type="button"
+            onClick={handleNativeShare}
+            className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-sm shadow-xl shadow-amber-500/25 transition transform hover:-translate-y-0.5 active:scale-98 glow-gold"
           >
-            <X className="w-5 h-5" />
+            <Share2 className="w-4 h-4" />
+            <span>More Share Options (Instagram, AirDrop, Messages)</span>
           </button>
         </div>
-
-        {/* Featured Session Spotlight Banner */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-950/90 p-4 shadow-inner">
-          <div className="flex items-center justify-end gap-2 mb-1.5">
-            <span className="text-xs font-mono font-bold text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-lg">
-              {formattedCode}
-            </span>
-          </div>
-          <div className="text-base sm:text-lg font-black text-white line-clamp-1">
-            {displayTitle}
-          </div>
-          <p className="text-xs text-slate-400 mt-1 line-clamp-2">
-            {shareText}
-          </p>
-        </div>
-
-        {/* Prominent Social Channels Grid */}
-        <div className="space-y-3">
-          <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
-            Choose Platform:
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-            {socialChannels.map((channel) => (
-              <button
-                key={channel.name}
-                onClick={channel.action}
-                className={`group relative flex items-center gap-3.5 p-3.5 rounded-2xl border border-slate-800/90 bg-slate-950/70 transition-all duration-200 active:scale-97 text-left shadow-lg ${channel.cardHover}`}
-              >
-                <div
-                  className={`w-11 h-11 rounded-xl border flex items-center justify-center font-black text-xl shrink-0 transition-transform group-hover:scale-110 shadow-sm ${channel.iconBg}`}
-                >
-                  {channel.iconNode || channel.iconText}
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center">
-                    <span className="text-sm font-bold text-white tracking-tight truncate">
-                      {channel.name}
-                    </span>
-                  </div>
-                  <div className="text-[11px] text-slate-400 font-medium">
-                    {channel.subtitle}
-                  </div>
-                </div>
-
-                <ExternalLink className="w-4 h-4 text-slate-600 group-hover:text-amber-400 transition shrink-0" />
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Native Mobile Share Sheet Callout (Mobile/Tablet Only) */}
-        {canNativeShare && (
-          <div className="pt-1">
-            <button
-              onClick={handleNativeShare}
-              className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-sm shadow-xl shadow-amber-500/25 transition transform hover:-translate-y-0.5 active:scale-98 glow-gold"
-            >
-              <Share2 className="w-4 h-4" />
-              <span>More Share Options (Instagram, AirDrop, Messages)</span>
-            </button>
-          </div>
-        )}
-      </div>
-    </div>,
-    document.body
+      )}
+    </dialog>
   );
 }

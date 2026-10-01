@@ -6,6 +6,7 @@ import { CustomMovieInput, Movie } from '@/types';
 import { STREAMING_NAMES, STREAMING_PLATFORMS, GENRE_INFO } from '@/data/moviesData';
 import type { TmdbSearchResult } from '@/lib/tmdb';
 import { trackAddMovie } from '@/lib/analytics';
+import { useHtmlDialog } from '@/hooks/useHtmlDialog';
 
 interface Props {
   isOpen: boolean;
@@ -21,6 +22,10 @@ export function AddCustomMovieModal(props: Props) {
 }
 
 function MovieForm({ onClose, onMovieAdded, sessionId, addedByVoterId, canVote = true }: Props) {
+  const { dialogRef, handleCancel, handleClick } = useHtmlDialog({
+    isOpen: true,
+    onClose,
+  });
   const [manual, setManual] = useState(false);
   const [title, setTitle] = useState('');
   const [year, setYear] = useState(new Date().getFullYear());
@@ -136,9 +141,15 @@ function MovieForm({ onClose, onMovieAdded, sessionId, addedByVoterId, canVote =
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-2 sm:p-4 bg-slate-950/85 backdrop-blur-md">
-      <div role="dialog" aria-modal="true" aria-labelledby="add-movie-title" className="relative w-full max-w-2xl max-h-[92dvh] overflow-y-auto rounded-t-3xl sm:rounded-3xl border border-slate-800 bg-slate-900 p-4 sm:p-8 shadow-2xl">
-        <button type="button" onClick={onClose} aria-label="Close add movie" className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white"><X className="w-5 h-5" /></button>
+    <dialog
+      ref={dialogRef}
+      closedby="any"
+      onCancel={handleCancel}
+      onClick={handleClick}
+      aria-labelledby="add-movie-title"
+      className="relative mb-0 mt-auto w-full sm:m-auto sm:w-[calc(100%-2rem)] max-w-2xl max-h-[92dvh] overflow-y-auto rounded-t-3xl sm:rounded-3xl border border-slate-800 bg-slate-900 p-4 sm:p-8 shadow-2xl text-white outline-none"
+    >
+      <button type="button" onClick={onClose} aria-label="Close add movie" className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white"><X className="w-5 h-5" /></button>
         <h2 id="add-movie-title" className="text-2xl font-black text-white pr-8">{manual ? 'Add Movie Manually' : 'Find a Movie'}</h2>
         <p className="text-sm text-slate-400 mt-2">{manual ? 'Enter the details yourself when a movie cannot be found.' : 'Search by title, choose your movie, and we’ll fill in the details.'}</p>
         <button type="button" onClick={toggleMode} disabled={isSubmitting} className="text-xs text-amber-400 underline my-4">{manual ? 'Back to movie search' : 'Can’t find it? Add manually'}</button>
@@ -382,7 +393,6 @@ function MovieForm({ onClose, onMovieAdded, sessionId, addedByVoterId, canVote =
           </div>
         </form>
         <p className="mt-4 text-[10px] text-slate-500">Movie data and images from <a href="https://www.themoviedb.org" target="_blank" rel="noreferrer" className="underline">TMDB</a>. This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
-      </div>
-    </div>
+    </dialog>
   );
 }

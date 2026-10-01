@@ -8,6 +8,7 @@ import { useVoter } from '@/context/VoterContext';
 import { GENRE_INFO } from '@/data/moviesData';
 import { VoterAvatar } from './VoterAvatar';
 import { trackViewMovie, trackPlayTrailer } from '@/lib/analytics';
+import { useHtmlDialog } from '@/hooks/useHtmlDialog';
 import {
   X,
   Star,
@@ -33,6 +34,11 @@ interface MovieDetailModalProps {
 export function MovieDetailModal({ movie, autoPlay = false, onClose }: MovieDetailModalProps) {
   const { currentVoter, isVoted, toggleMovieVote, hasReachedVoteLimit, isVotePending, sessionData } = useVoter();
   const [isPlaying, setIsPlaying] = useState(false);
+
+  const { dialogRef, handleCancel, handleClick } = useHtmlDialog({
+    isOpen: Boolean(movie),
+    onClose,
+  });
 
   useEffect(() => {
     setIsPlaying(Boolean(autoPlay));
@@ -66,14 +72,6 @@ export function MovieDetailModal({ movie, autoPlay = false, onClose }: MovieDeta
     }
   };
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
-
   const votersWhoVoted = React.useMemo(() => {
     if (!movie) return [];
     const scoreItem = sessionData?.leaderboard?.find((item) => item.movie.id === movie.id);
@@ -99,19 +97,26 @@ export function MovieDetailModal({ movie, autoPlay = false, onClose }: MovieDeta
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-6 bg-black/85 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
-      <div className="relative w-full max-w-3xl my-auto bg-slate-900 border border-slate-700/80 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden glow-gold max-h-[95vh] flex flex-col">
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 z-30 p-2 sm:p-2.5 text-slate-300 hover:text-white bg-slate-950/80 hover:bg-slate-800 rounded-full backdrop-blur-md transition border border-slate-700 active:scale-95 shadow-lg"
-          aria-label="Close"
-        >
-          <X className="w-5 h-5" />
-        </button>
+    <dialog
+      ref={dialogRef}
+      closedby="any"
+      onCancel={handleCancel}
+      onClick={handleClick}
+      aria-labelledby="movie-detail-title"
+      className="relative w-[calc(100%-1rem)] sm:w-full max-w-3xl m-auto bg-slate-900 border border-slate-700/80 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden glow-gold max-h-[95vh] flex flex-col p-0 text-white outline-none"
+    >
+      {/* Close Button */}
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute top-3 right-3 z-30 p-2 sm:p-2.5 text-slate-300 hover:text-white bg-slate-950/80 hover:bg-slate-800 rounded-full backdrop-blur-md transition border border-slate-700 active:scale-95 shadow-lg"
+        aria-label="Close"
+      >
+        <X className="w-5 h-5" />
+      </button>
 
-        {/* Video Area */}
-        <div className="relative w-full aspect-video bg-black shrink-0 overflow-hidden">
+      {/* Video Area */}
+      <div className="relative w-full aspect-video bg-black shrink-0 overflow-hidden">
           {isPlaying ? (
             <iframe
               src={`https://www.youtube-nocookie.com/embed/${movie.youtubeTrailerId}?autoplay=1&rel=0&modestbranding=1`}
@@ -215,7 +220,7 @@ export function MovieDetailModal({ movie, autoPlay = false, onClose }: MovieDeta
                 )}
               </div>
 
-              <h1 className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">
+              <h1 id="movie-detail-title" className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">
                 {movie.title}
               </h1>
 
@@ -374,7 +379,6 @@ export function MovieDetailModal({ movie, autoPlay = false, onClose }: MovieDeta
             </div>
           </div>
         </div>
-      </div>
-    </div>
+    </dialog>
   );
 }

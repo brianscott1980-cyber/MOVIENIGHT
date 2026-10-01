@@ -69,3 +69,51 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #eab308;
 }
+
+/* HTML5 Dialog & Backdrop Standards */
+dialog {
+  margin: auto;
+  border: none;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  max-width: 100vw;
+  max-height: 100dvh;
+  outline: none;
+}
+
+dialog::backdrop {
+  background-color: rgba(2, 6, 23, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+@keyframes dialog-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes backdrop-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+dialog[open] {
+  animation: dialog-fade-in 0.2s ease-out;
+}
+
+dialog[open]::backdrop {
+  animation: backdrop-fade-in 0.2s ease-out;
+}
+
+html:has(dialog[open]) {
+  overflow: hidden;
+}
