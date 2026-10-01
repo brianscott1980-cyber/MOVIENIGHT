@@ -1593,7 +1593,7 @@ export async function getSessionOgMetadata(rawSessionId: string): Promise<{
  */
 export async function recordSessionViewInDB(
   rawSessionId: string,
-  voterInfo?: { voterId?: string; voterName?: string; avatar?: string }
+  voterInfo?: { visitorId?: string; voterId?: string; voterName?: string; avatar?: string }
 ): Promise<void> {
   try {
     let sid = (rawSessionId || '').trim();
@@ -1606,8 +1606,43 @@ export async function recordSessionViewInDB(
     await ensureDbInitialized();
     const pool = getPool();
 
+    const visitorId = voterInfo?.visitorId || null;
+    const voterId = voterInfo?.voterId || null;
+    const effectiveIdentifier = voterId || visitorId;
+
+    // Check if this visitor/voter viewed within the last 10 minutes (600,000 ms)
+    if (effectiveIdentifier) {
+      const recentCheck = await pool.query<{ recent_views: any }>(
+        'SELECT recent_views FROM sessions WHERE session_id = $1',
+        [sid]
+      );
+
+      if (recentCheck.rows.length > 0 && Array.isArray(recentCheck.rows[0].recent_views)) {
+        const recentList = recentCheck.rows[0].recent_views as any[];
+        const nowMs = Date.now();
+        const tenMinutesMs = 10 * 60 * 1000;
+
+        const hasRecentView = recentList.some((v) => {
+          if (!v || !v.timestamp) return false;
+          const isSameVisitor =
+            (voterId && v.voterId === voterId) ||
+            (visitorId && v.visitorId === visitorId);
+          if (!isSameVisitor) return false;
+
+          const diffMs = nowMs - new Date(v.timestamp).getTime();
+          return !isNaN(diffMs) && diffMs >= 0 && diffMs < tenMinutesMs;
+        });
+
+        if (hasRecentView) {
+          // Already counted within this 10-minute activity window
+          return;
+        }
+      }
+    }
+
     const newViewObj = JSON.stringify({
       timestamp: new Date().toISOString(),
+      visitorId: voterInfo?.visitorId || null,
       voterId: voterInfo?.voterId || null,
       voterName: voterInfo?.voterName || null,
       avatar: voterInfo?.avatar || null,

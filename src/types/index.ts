@@ -134,7 +134,7 @@ export interface SessionConfig {
   aiMovieIds?: string[];
   viewCount?: number;
   recentViewCount?: number;
-  recentVisitors?: Array<{ timestamp: string; voterId?: string; voterName?: string; avatar?: string }>;
+  recentVisitors?: Array<{ timestamp: string; visitorId?: string; voterId?: string; voterName?: string; avatar?: string }>;
   createdAt: string;
   updatedAt: string;
 }

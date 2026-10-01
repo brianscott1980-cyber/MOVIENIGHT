@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ShareSessionModal } from '@/components/ShareSessionModal';
+import { recordSessionViewActivity } from '@/lib/sessionActivity';
 
 export default function SessionLivePage() {
   const { sessionId, isHost } = useVoter();
@@ -109,29 +110,26 @@ export default function SessionLivePage() {
     };
   }, [sessionId, isWinnerRevealed, fetchSession]);
 
-  // Record session view asynchronously in background (fire-and-forget)
+  // Record session view asynchronously in background with 10-minute grouping (fire-and-forget, zero performance impact)
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const viewKey = `movienight_viewed_${sessionId}`;
-    const lastView = sessionStorage.getItem(viewKey);
-    if (!lastView) {
-      sessionStorage.setItem(viewKey, Date.now().toString());
-      try {
-        const payload = JSON.stringify({ sessionId });
-        if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
-          navigator.sendBeacon('/api/session/view', new Blob([payload], { type: 'application/json' }));
-        } else {
-          fetch('/api/session/view', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: payload,
-            keepalive: true,
-          }).catch(() => {});
-        }
-      } catch (e) {
-        // Silently ignore
+
+    const triggerView = () => {
+      recordSessionViewActivity({ sessionId });
+    };
+
+    triggerView();
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        triggerView();
       }
-    }
+    };
+
+    window.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      window.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [sessionId]);
 
   const handleCrownWinner = async () => {

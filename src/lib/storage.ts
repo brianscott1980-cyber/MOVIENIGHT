@@ -105,7 +105,7 @@ export async function getHostPastVoters(
 
 export async function recordSessionView(
   sessionId: string,
-  voterInfo?: { voterId?: string; voterName?: string; avatar?: string }
+  voterInfo?: { visitorId?: string; voterId?: string; voterName?: string; avatar?: string }
 ): Promise<void> {
   return recordSessionViewInDB(sessionId, voterInfo);
 }
