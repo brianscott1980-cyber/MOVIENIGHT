@@ -177,140 +177,57 @@ export const SAMPLE_EMAIL_MOVIES: Movie[] = [
   },
 ];
 
-/**
- * Send email notification when a session is launched (created and voting opened).
- * Recipients: Host (if known) + Admin (you).
- */
-export async function sendSessionLaunchedEmail({
-  session,
-  contenders,
-}: {
+interface SessionLaunchedEmailContext {
   session: SessionConfig;
-  contenders?: Movie[];
-}): Promise<void> {
-  const transporter = getMailTransporter();
-  if (!transporter) {
-    console.info('[Email] SMTP credentials not configured. Skipping session launch email.');
-    return;
-  }
+  sessionTitle: string;
+  formattedCode: string;
+  sessionUrl: string;
+  movieGridHtml: string;
+  movieCount: number;
+  role: 'host' | 'invitee';
+  hostName: string;
+  whatsappUrl: string;
+  telegramUrl: string;
+  twitterUrl: string;
+}
 
-  try {
-    const adminEmail = getAdminEmail();
-    const hostEmail = session.creatorEmail?.trim();
+function buildSessionLaunchedHtml({
+  session,
+  sessionTitle,
+  formattedCode,
+  sessionUrl,
+  movieGridHtml,
+  movieCount,
+  role,
+  hostName,
+  whatsappUrl,
+  telegramUrl,
+  twitterUrl,
+}: SessionLaunchedEmailContext): string {
+  const isHost = role === 'host';
 
-    const recipientSet = new Set<string>();
-    if (adminEmail) recipientSet.add(adminEmail.toLowerCase());
-    if (hostEmail) recipientSet.add(hostEmail.toLowerCase());
+  const headerLine1 = isHost
+    ? 'Your MovieNight ballot has started'
+    : `You have been invited by ${hostName} to take part`;
 
-    const recipients = Array.from(recipientSet);
-    if (recipients.length === 0) {
-      console.info('[Email] No recipients found for session launched email.');
-      return;
-    }
+  const introSentence = isHost
+    ? session.aiPrompt
+      ? `Your MovieNight ballot has started based on the theme &ldquo;${session.aiPrompt}&rdquo;. Invite your guests or start voting below!`
+      : `Your MovieNight ballot has started! Invite your guests or start voting below.`
+    : session.aiPrompt
+      ? `You have been invited by ${hostName} to take part and vote on tonight's lineup based on the theme &ldquo;${session.aiPrompt}&rdquo;.`
+      : `You have been invited by ${hostName} to take part and help choose tonight's feature film from our contender lineup!`;
 
-    const origin = getAppOrigin();
-    const sessionUrl = `${origin}/s/${encodeURIComponent(session.sessionId)}`;
-    const formattedCode = formatCode(session.sessionId);
-    const sessionTitle = session.sessionTitle || `Movie Night ${session.sessionId}`;
+  const pageTitle = isHost
+    ? `🍿 Your MovieNight ballot has started: ${sessionTitle}`
+    : `🍿 You have been invited by ${hostName} to take part in ${sessionTitle}`;
 
-    // Retrieve full movie lineup if not passed directly
-    let movieContenders = contenders && contenders.length > 0 ? contenders : [];
-    if (movieContenders.length === 0) {
-      try {
-        const { computeSessionResponse } = await import('@/lib/storage');
-        const sessionData = await computeSessionResponse(session.sessionId);
-        if (sessionData && sessionData.allAvailableMovies) {
-          const activeIds = new Set(session.activeMovieIds || []);
-          movieContenders = sessionData.allAvailableMovies.filter((m) => activeIds.has(m.id));
-          if (movieContenders.length === 0) {
-            movieContenders = sessionData.allAvailableMovies;
-          }
-        }
-      } catch (err) {
-        console.warn('[Email] Could not load movie contenders for email:', err);
-      }
-    }
-
-    if (movieContenders.length === 0) {
-      movieContenders = SAMPLE_EMAIL_MOVIES;
-    }
-
-    const movieCount = session.activeMovieIds?.length || movieContenders.length;
-
-    // One-sentence introduction
-    const oneSentenceIntro = session.aiPrompt
-      ? `You've been invited to vote on tonight's lineup based on the theme &ldquo;${session.aiPrompt}&rdquo;.`
-      : `You've been invited to vote and help choose tonight's feature film from our contender lineup!`;
-
-    // Social share links
-    const shareText = `🍿 Cast your vote on our living room movie ballot for "${sessionTitle}"! Code: ${formattedCode}`;
-    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(`${shareText}\n\n${sessionUrl}`)}`;
-    const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(sessionUrl)}&text=${encodeURIComponent(shareText)}`;
-    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(sessionUrl)}`;
-
-    // Build movie poster grid: ALL contender movies included, up to 4x per row, equal widths
-    const movieRows: Movie[][] = [];
-    for (let i = 0; i < movieContenders.length; i += 4) {
-      movieRows.push(movieContenders.slice(i, i + 4));
-    }
-
-    const movieGridHtml = movieRows
-      .map((row) => `
-        <tr>
-          ${row
-            .map((m) => {
-              const poster = m.posterUrl?.startsWith('http')
-                ? m.posterUrl
-                : m.posterUrl
-                ? `${origin}${m.posterUrl}`
-                : 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500&auto=format&fit=crop&q=80';
-              const rating =
-                m.tmdbRating != null
-                  ? m.tmdbRating.toFixed(1)
-                  : m.imdbRating != null
-                  ? m.imdbRating.toFixed(1)
-                  : null;
-
-              return `
-              <td width="25%" valign="top" style="padding: 4px; box-sizing: border-box; width: 25%;">
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #080b12; border: 1px solid #1e293b; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.35);">
-                  <tr>
-                    <td style="padding: 0;">
-                      <a href="${sessionUrl}" target="_blank" style="text-decoration: none; display: block;">
-                        <img src="${poster}" alt="${m.title}" width="130" style="width: 100%; height: auto; display: block; border-top-left-radius: 11px; border-top-right-radius: 11px; aspect-ratio: 2/3; object-fit: cover;" />
-                      </a>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 8px 6px 10px; text-align: left;">
-                      <div style="color: #ffffff; font-size: 11px; font-weight: 800; line-height: 1.25; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${m.title}">
-                        ${m.title}
-                      </div>
-                      <div style="font-size: 10px; color: #94a3b8; font-weight: 600;">
-                        <span>${m.year || ''}</span>
-                        ${rating ? `<span style="color: #f59e0b; margin-left: 3px; font-weight: 700;">★${rating}</span>` : ''}
-                      </div>
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            `;
-            })
-            .join('')}
-          ${row.length < 4 ? `<td width="${(4 - row.length) * 25}%" style="width: ${(4 - row.length) * 25}%;"></td>` : ''}
-        </tr>
-      `)
-      .join('');
-
-    console.info(`[Email] Sending refined session launched notification for session ${session.sessionId} (${movieContenders.length} movies) to: ${recipients.join(', ')}`);
-
-    const html = `
-<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🍿 Cast Your Vote: ${sessionTitle}</title>
+  <title>${pageTitle}</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #080b12; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #f8fafc; -webkit-font-smoothing: antialiased;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #080b12; padding: 32px 12px;">
@@ -330,10 +247,10 @@ export async function sendSessionLaunchedEmail({
                       🍿
                     </div>
                   </td>
-                  <!-- Right: Message to cast vote for session name over 2 lines -->
+                  <!-- Right: Message over 2 lines -->
                   <td valign="middle" align="left">
                     <div style="color: #cbd5e1; font-size: 15px; font-weight: 700; line-height: 1.25; margin-bottom: 3px; letter-spacing: -0.2px;">
-                      Cast your vote for
+                      ${headerLine1}
                     </div>
                     <div style="font-size: 24px; font-weight: 900; line-height: 1.2; letter-spacing: -0.5px; background: linear-gradient(90deg, #fbbf24 0%, #f87171 50%, #f43f5e 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; color: #fbbf24;">
                       ${sessionTitle}
@@ -344,7 +261,7 @@ export async function sendSessionLaunchedEmail({
 
               <!-- One-Sentence Introduction -->
               <p style="color: #94a3b8; font-size: 13px; margin: 14px 0 0; line-height: 1.5; font-weight: 500;">
-                ${oneSentenceIntro}
+                ${introSentence}
               </p>
 
               <!-- Start Voting Button Directly After Title Details -->
@@ -443,19 +360,268 @@ export async function sendSessionLaunchedEmail({
     </tr>
   </table>
 </body>
-</html>
-    `;
+</html>`;
+}
 
-    const info = await transporter.sendMail({
-      from: getSenderAddress(),
-      to: recipients.join(', '),
-      subject: `🍿 Cast Your Vote: ${sessionTitle} (Code: ${formattedCode})`,
-      html,
-    });
-    console.info(`[Email] Session launched notification sent successfully. MessageId: ${info.messageId}`);
+export interface SendSessionLaunchedEmailOptions {
+  session: SessionConfig;
+  contenders?: Movie[];
+  inviteeEmails?: string[];
+  recipientRole?: 'host' | 'invitee';
+  overrideRecipients?: string[];
+}
+
+/**
+ * Send email notification when a session is launched (created and voting opened).
+ * Differentiates messaging:
+ * - Host / Admin: "Your MovieNight ballot has started"
+ * - Invited voters: "You have been invited by <Host name> to take part"
+ */
+export async function sendSessionLaunchedEmail({
+  session,
+  contenders,
+  inviteeEmails = [],
+  recipientRole,
+  overrideRecipients,
+}: SendSessionLaunchedEmailOptions): Promise<void> {
+  const transporter = getMailTransporter();
+  if (!transporter) {
+    console.info('[Email] SMTP credentials not configured. Skipping session launch email.');
+    return;
+  }
+
+  try {
+    const adminEmail = getAdminEmail();
+    const hostEmail = session.creatorEmail?.trim();
+    const rawCreatorName = session.creatorName?.trim();
+    const hostName =
+      rawCreatorName ||
+      (hostEmail ? hostEmail.split('@')[0] : 'your host');
+
+    const origin = getAppOrigin();
+    const sessionUrl = `${origin}/s/${encodeURIComponent(session.sessionId)}`;
+    const formattedCode = formatCode(session.sessionId);
+    const sessionTitle = session.sessionTitle || `Movie Night ${session.sessionId}`;
+
+    // Retrieve full movie lineup if not passed directly
+    let movieContenders = contenders && contenders.length > 0 ? contenders : [];
+    if (movieContenders.length === 0) {
+      try {
+        const { computeSessionResponse } = await import('@/lib/storage');
+        const sessionData = await computeSessionResponse(session.sessionId);
+        if (sessionData && sessionData.allAvailableMovies) {
+          const activeIds = new Set(session.activeMovieIds || []);
+          movieContenders = sessionData.allAvailableMovies.filter((m) => activeIds.has(m.id));
+          if (movieContenders.length === 0) {
+            movieContenders = sessionData.allAvailableMovies;
+          }
+        }
+      } catch (err) {
+        console.warn('[Email] Could not load movie contenders for email:', err);
+      }
+    }
+
+    if (movieContenders.length === 0) {
+      movieContenders = SAMPLE_EMAIL_MOVIES;
+    }
+
+    const movieCount = session.activeMovieIds?.length || movieContenders.length;
+
+    // Social share links
+    const shareText = `🍿 Cast your vote on our living room movie ballot for "${sessionTitle}"! Code: ${formattedCode}`;
+    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(`${shareText}\n\n${sessionUrl}`)}`;
+    const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(sessionUrl)}&text=${encodeURIComponent(shareText)}`;
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(sessionUrl)}`;
+
+    // Build movie poster grid: ALL contender movies included, up to 4x per row, equal widths
+    const movieRows: Movie[][] = [];
+    for (let i = 0; i < movieContenders.length; i += 4) {
+      movieRows.push(movieContenders.slice(i, i + 4));
+    }
+
+    const movieGridHtml = movieRows
+      .map((row) => `
+        <tr>
+          ${row
+            .map((m) => {
+              const poster = m.posterUrl?.startsWith('http')
+                ? m.posterUrl
+                : m.posterUrl
+                ? `${origin}${m.posterUrl}`
+                : 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500&auto=format&fit=crop&q=80';
+              const rating =
+                m.tmdbRating != null
+                  ? m.tmdbRating.toFixed(1)
+                  : m.imdbRating != null
+                  ? m.imdbRating.toFixed(1)
+                  : null;
+
+              return `
+              <td width="25%" valign="top" style="padding: 4px; box-sizing: border-box; width: 25%;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #080b12; border: 1px solid #1e293b; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.35);">
+                  <tr>
+                    <td style="padding: 0;">
+                      <a href="${sessionUrl}" target="_blank" style="text-decoration: none; display: block;">
+                        <img src="${poster}" alt="${m.title}" width="130" style="width: 100%; height: auto; display: block; border-top-left-radius: 11px; border-top-right-radius: 11px; aspect-ratio: 2/3; object-fit: cover;" />
+                      </a>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 6px 10px; text-align: left;">
+                      <div style="color: #ffffff; font-size: 11px; font-weight: 800; line-height: 1.25; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${m.title}">
+                        ${m.title}
+                      </div>
+                      <div style="font-size: 10px; color: #94a3b8; font-weight: 600;">
+                        <span>${m.year || ''}</span>
+                        ${rating ? `<span style="color: #f59e0b; margin-left: 3px; font-weight: 700;">★${rating}</span>` : ''}
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            `;
+            })
+            .join('')}
+          ${row.length < 4 ? `<td width="${(4 - row.length) * 25}%" style="width: ${(4 - row.length) * 25}%;"></td>` : ''}
+        </tr>
+      `)
+      .join('');
+
+    const sharedContext = {
+      session,
+      sessionTitle,
+      formattedCode,
+      sessionUrl,
+      movieGridHtml,
+      movieCount,
+      hostName,
+      whatsappUrl,
+      telegramUrl,
+      twitterUrl,
+    };
+
+    // If explicit override recipients are passed (e.g. direct test or single invite)
+    if (overrideRecipients && overrideRecipients.length > 0) {
+      const role = recipientRole || 'invitee';
+      const isHost = role === 'host';
+      const subject = isHost
+        ? `🍿 Your MovieNight ballot has started: ${sessionTitle} (Code: ${formattedCode})`
+        : `🍿 You have been invited by ${hostName} to take part in ${sessionTitle} (Code: ${formattedCode})`;
+      const html = buildSessionLaunchedHtml({ ...sharedContext, role });
+
+      for (const email of overrideRecipients) {
+        try {
+          const info = await transporter.sendMail({
+            from: getSenderAddress(),
+            to: email,
+            subject,
+            html,
+          });
+          console.info(`[Email] Notification (${role}) sent to ${email}. MessageId: ${info.messageId}`);
+        } catch (err) {
+          console.error(`[Email] Failed to send (${role}) email to ${email}:`, err);
+        }
+      }
+      return;
+    }
+
+    // Determine host recipients (host + admin)
+    const hostRecipients = new Set<string>();
+    if (hostEmail) hostRecipients.add(hostEmail.toLowerCase());
+    if (adminEmail) hostRecipients.add(adminEmail.toLowerCase());
+
+    // Determine invitee recipients (voters in session.voters + extra inviteeEmails, excluding host/admin)
+    const inviteeRecipients = new Set<string>();
+    if (Array.isArray(session.voters)) {
+      for (const voter of session.voters) {
+        if (voter.email && voter.email.includes('@')) {
+          const em = voter.email.trim().toLowerCase();
+          if (!hostRecipients.has(em)) {
+            inviteeRecipients.add(em);
+          }
+        }
+      }
+    }
+    for (const em of inviteeEmails) {
+      if (em && em.includes('@')) {
+        const cleaned = em.trim().toLowerCase();
+        if (!hostRecipients.has(cleaned)) {
+          inviteeRecipients.add(cleaned);
+        }
+      }
+    }
+
+    if (hostRecipients.size === 0 && inviteeRecipients.size === 0) {
+      console.info('[Email] No recipients found for session launched email.');
+      return;
+    }
+
+    // 1. Send Host Email ("Your MovieNight ballot has started")
+    if (hostRecipients.size > 0 && (!recipientRole || recipientRole === 'host')) {
+      const hostTargets = Array.from(hostRecipients);
+      const hostSubject = `🍿 Your MovieNight ballot has started: ${sessionTitle} (Code: ${formattedCode})`;
+      const hostHtml = buildSessionLaunchedHtml({ ...sharedContext, role: 'host' });
+
+      try {
+        const info = await transporter.sendMail({
+          from: getSenderAddress(),
+          to: hostTargets.join(', '),
+          subject: hostSubject,
+          html: hostHtml,
+        });
+        console.info(`[Email] Host notification sent to: ${hostTargets.join(', ')}. MessageId: ${info.messageId}`);
+      } catch (err) {
+        console.error('[Email] Failed to send host session launch notification:', err);
+      }
+    }
+
+    // 2. Send Invitee Email ("You have been invited by Host name to take part")
+    if (inviteeRecipients.size > 0 && (!recipientRole || recipientRole === 'invitee')) {
+      const inviteeTargets = Array.from(inviteeRecipients);
+      const inviteeSubject = `🍿 You have been invited by ${hostName} to take part in ${sessionTitle} (Code: ${formattedCode})`;
+      const inviteeHtml = buildSessionLaunchedHtml({ ...sharedContext, role: 'invitee' });
+
+      for (const invitee of inviteeTargets) {
+        try {
+          const info = await transporter.sendMail({
+            from: getSenderAddress(),
+            to: invitee,
+            subject: inviteeSubject,
+            html: inviteeHtml,
+          });
+          console.info(`[Email] Invitee notification sent to: ${invitee}. MessageId: ${info.messageId}`);
+        } catch (err) {
+          console.error(`[Email] Failed to send invitee notification to ${invitee}:`, err);
+        }
+      }
+    }
   } catch (err) {
     console.error('[Email] Failed to send session launched notification:', err);
   }
+}
+
+/**
+ * Helper to explicitly send an invite email to one or more invited voters.
+ */
+export async function sendSessionInviteEmail({
+  session,
+  to,
+  contenders,
+}: {
+  session: SessionConfig;
+  to: string | string[];
+  contenders?: Movie[];
+}): Promise<void> {
+  const recipients = (Array.isArray(to) ? to : [to])
+    .map((e) => e.trim().toLowerCase())
+    .filter((e) => e.includes('@'));
+  if (recipients.length === 0) return;
+  return sendSessionLaunchedEmail({
+    session,
+    contenders,
+    recipientRole: 'invitee',
+    overrideRecipients: recipients,
+  });
 }
 
 /**
