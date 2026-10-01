@@ -216,11 +216,6 @@ export function ShareSessionModal({
             </button>
           </div>
         )}
-
-        {/* Footer info */}
-        <p className="text-[11px] text-center text-slate-500 pt-1">
-          Sharing opens the official platform composer with your session preview and voting invite.
-        </p>
       </div>
     </div>
   );
