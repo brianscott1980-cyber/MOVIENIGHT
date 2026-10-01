@@ -20,7 +20,7 @@ import { BallotMovieGrid } from './components/BallotMovieGrid';
 
 export default function SessionVotingPage() {
   const router = useRouter();
-  const { sessionId, sessionData, votedMovieIds, refreshSession, currentVoter, openPicker, isLoading } = useVoter();
+  const { sessionId, sessionData, votedMovieIds, refreshSession, currentVoter, openPicker, isLoading, openSuggestModalSignal, setPendingAction } = useVoter();
   const { user, userEmail } = useAuth();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -29,6 +29,13 @@ export default function SessionVotingPage() {
   const [randomSeedMap, setRandomSeedMap] = useState<Record<string, number>>({});
   const [modalConfig, setModalConfig] = useState<{ movie: Movie; autoPlay: boolean } | null>(null);
   const [isSuggestModalOpen, setIsSuggestModalOpen] = useState(false);
+
+  // Trigger suggest modal if requested by pending action signal
+  useEffect(() => {
+    if (openSuggestModalSignal > 0) {
+      setIsSuggestModalOpen(true);
+    }
+  }, [openSuggestModalSignal]);
 
   // If vote ended, default view is the live podium outcome unless explicit view=ballot is requested
   useEffect(() => {
@@ -413,7 +420,10 @@ export default function SessionVotingPage() {
           suggestionsRemaining={suggestionsRemaining}
           suggestionLimitReached={suggestionLimitReached}
           onOpenSuggestModal={() => setIsSuggestModalOpen(true)}
-          onOpenPicker={openPicker}
+          onOpenPicker={() => {
+            setPendingAction({ type: 'suggest', sessionId });
+            openPicker();
+          }}
         />
 
         {/* Movies Grid */}

@@ -42,7 +42,7 @@ const PRESET_AVATARS = [
 ];
 
 export function VoterPickerModal({ isOpen, onClose }: VoterPickerModalProps = {}) {
-  const { sessionId, currentVoter, setCurrentVoter, sessionData, isPickerOpen, closePicker, refreshSession } = useVoter();
+  const { sessionId, currentVoter, setCurrentVoter, sessionData, isPickerOpen, closePicker, refreshSession, executePendingAction } = useVoter();
   const { user, userName, userAvatar, userEmail, signInWithOAuth } = useAuth();
 
   const actuallyOpen = isOpen !== undefined ? isOpen : isPickerOpen;
@@ -105,13 +105,13 @@ export function VoterPickerModal({ isOpen, onClose }: VoterPickerModalProps = {}
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && currentVoter) handleClose();
+      if (e.key === 'Escape') handleClose();
     };
     if (actuallyOpen) {
       window.addEventListener('keydown', handleKeyDown);
     }
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [actuallyOpen, handleClose, currentVoter]);
+  }, [actuallyOpen, handleClose]);
 
   if (!actuallyOpen) return null;
 
@@ -167,6 +167,9 @@ export function VoterPickerModal({ isOpen, onClose }: VoterPickerModalProps = {}
       }
 
       await refreshSession();
+      if (responseData.voter) {
+        await executePendingAction(responseData.voter);
+      }
       handleClose();
     } catch (err: unknown) {
       setErrorMessage(err instanceof Error ? err.message : 'Failed to join movie night');
@@ -177,6 +180,9 @@ export function VoterPickerModal({ isOpen, onClose }: VoterPickerModalProps = {}
 
   const handleGoogleSignIn = async () => {
     setIsSubmitting(true);
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('movienight_auth_return', window.location.pathname + window.location.search);
+    }
     try {
       await signInWithOAuth('google');
     } catch (err) {
@@ -187,6 +193,9 @@ export function VoterPickerModal({ isOpen, onClose }: VoterPickerModalProps = {}
 
   const handleFacebookSignIn = async () => {
     setIsSubmitting(true);
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('movienight_auth_return', window.location.pathname + window.location.search);
+    }
     try {
       await signInWithOAuth('facebook');
     } catch (err) {
@@ -198,15 +207,13 @@ export function VoterPickerModal({ isOpen, onClose }: VoterPickerModalProps = {}
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
       <div className="relative w-full max-w-lg p-5 sm:p-6 bg-slate-900 border border-amber-500/40 rounded-t-3xl sm:rounded-3xl shadow-2xl glow-gold max-h-[90vh] flex flex-col">
-        {currentVoter && (
-          <button
-            onClick={handleClose}
-            className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white transition rounded-full hover:bg-slate-800 active:scale-95"
-            aria-label="Close"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        )}
+        <button
+          onClick={handleClose}
+          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white transition rounded-full hover:bg-slate-800 active:scale-95"
+          aria-label="Close"
+        >
+          <X className="w-5 h-5" />
+        </button>
 
         {/* Modal Header */}
         <div className="text-center mb-4 shrink-0">

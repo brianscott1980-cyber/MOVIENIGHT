@@ -201,4 +201,3 @@ export function trackPlayTrailer({
     youtube_trailer_id: youtubeTrailerId,
   });
 }
-

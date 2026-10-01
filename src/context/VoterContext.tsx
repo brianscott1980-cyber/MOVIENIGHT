@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { Voter, SessionResponse, Ballot } from '@/types';
+import { Voter, SessionResponse, Ballot, PendingVoterAction } from '@/types';
 import { DEFAULT_VOTERS } from '@/data/moviesData';
 import { useAuth } from '@/context/AuthContext';
 import { trackVote } from '@/lib/analytics';
@@ -26,6 +26,10 @@ interface VoterContextType {
   openPicker: () => void;
   closePicker: () => void;
   logout: () => Promise<void>;
+  pendingAction: PendingVoterAction | null;
+  setPendingAction: (action: PendingVoterAction | null) => void;
+  executePendingAction: (voter?: Voter) => Promise<void>;
+  openSuggestModalSignal: number;
 }
 
 const VoterContext = createContext<VoterContextType | undefined>(undefined);
@@ -50,12 +54,38 @@ export function VoterProvider({
   const hasReachedVoteLimit = voteLimit > 0 && votedMovieIds.length >= voteLimit;
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [hasPromptedInitial, setHasPromptedInitial] = useState(false);
+  const [pendingAction, setPendingActionState] = useState<PendingVoterAction | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const stored = sessionStorage.getItem('movienight_pending_voter_action');
+      if (stored) {
+        const parsed = JSON.parse(stored) as PendingVoterAction;
+        if (parsed.sessionId === sessionId) return parsed;
+      }
+    } catch {}
+    return null;
+  });
+  const [openSuggestModalSignal, setOpenSuggestModalSignal] = useState(0);
+
+  const setPendingAction = useCallback((action: PendingVoterAction | null) => {
+    setPendingActionState(action);
+    if (typeof window !== 'undefined') {
+      if (action) {
+        sessionStorage.setItem('movienight_pending_voter_action', JSON.stringify(action));
+      } else {
+        sessionStorage.removeItem('movienight_pending_voter_action');
+      }
+    }
+  }, []);
 
   const openPicker = () => {
     if (sessionData?.session?.status === 'locked') return;
     setIsPickerOpen(true);
   };
-  const closePicker = () => setIsPickerOpen(false);
+  const closePicker = () => {
+    setPendingAction(null);
+    setIsPickerOpen(false);
+  };
 
   // Fetch session data
   const refreshSession = useCallback(async () => {
@@ -349,12 +379,10 @@ export function VoterProvider({
     }
 
     // 5. Only if the browser has NO saved guest profile at all (first-time visitor):
-    // Prompt the user who they are (only if session is not locked!)
+    // Do not immediately prompt the user who they are on landing.
+    // They will be asked when performing an action (e.g. vote, suggest movie).
     if (!hasPromptedInitial) {
       setCurrentVoterState(null);
-      if (sessionData.session.status !== 'locked') {
-        setIsPickerOpen(true);
-      }
       setHasPromptedInitial(true);
     }
   }, [
@@ -418,12 +446,12 @@ export function VoterProvider({
     return votedMovieIds.includes(movieId);
   };
 
-  const performToggleMovieVote = async (movieId: string): Promise<boolean> => {
+  const performToggleMovieVote = async (movieId: string, overrideVoter?: Voter): Promise<boolean> => {
     if (sessionData?.session?.status === 'locked') {
       return false;
     }
 
-    let voter = currentVoter;
+    let voter = overrideVoter || currentVoter;
 
     if (!voter && user && user.id) {
       // User is authenticated but state hasn't settled yet: resolve voter immediately
@@ -518,7 +546,8 @@ export function VoterProvider({
     }
 
     if (!voter) {
-      // First-time unauthenticated user hasn't chosen who they are yet! Open the picker modal
+      // First-time unauthenticated user hasn't chosen who they are yet! Save pending action and open picker
+      setPendingAction({ type: 'vote', movieId, sessionId });
       setIsPickerOpen(true);
       return false;
     }
@@ -576,6 +605,58 @@ export function VoterProvider({
     try { return await performToggleMovieVote(movieId); }
     finally { votePendingRef.current = false; setIsVotePending(false); }
   };
+
+  const executePendingAction = useCallback(async (explicitVoter?: Voter) => {
+    let action = pendingAction;
+    if (!action && typeof window !== 'undefined') {
+      try {
+        const raw = sessionStorage.getItem('movienight_pending_voter_action');
+        if (raw) {
+          const parsed = JSON.parse(raw) as PendingVoterAction;
+          if (parsed.sessionId === sessionId) action = parsed;
+        }
+      } catch {}
+    }
+
+    if (!action || action.sessionId !== sessionId) return;
+
+    // Clear pending action first to prevent duplicate execution
+    setPendingAction(null);
+
+    const voterToUse = explicitVoter || currentVoter;
+
+    if (action.type === 'vote') {
+      const targetMovieId = action.movieId;
+      if (voterToUse) {
+        await performToggleMovieVote(targetMovieId, voterToUse);
+      } else {
+        await performToggleMovieVote(targetMovieId);
+      }
+    } else if (action.type === 'suggest') {
+      setOpenSuggestModalSignal((prev) => prev + 1);
+    }
+  }, [pendingAction, sessionId, currentVoter, performToggleMovieVote, setPendingAction]);
+
+  // Execute any pending actions once currentVoter is resolved (e.g. after OAuth redirect or join)
+  useEffect(() => {
+    if (!currentVoter) return;
+    if (typeof window === 'undefined') return;
+
+    let action = pendingAction;
+    if (!action) {
+      try {
+        const raw = sessionStorage.getItem('movienight_pending_voter_action');
+        if (raw) {
+          const parsed = JSON.parse(raw) as PendingVoterAction;
+          if (parsed.sessionId === sessionId) action = parsed;
+        }
+      } catch {}
+    }
+
+    if (action && action.sessionId === sessionId) {
+      void executePendingAction(currentVoter);
+    }
+  }, [currentVoter, sessionId, pendingAction, executePendingAction]);
 
   const clearMyVotes = async (): Promise<boolean> => {
     if (sessionData?.session?.status === 'locked') return false;
@@ -661,6 +742,10 @@ export function VoterProvider({
         openPicker,
         closePicker,
         logout,
+        pendingAction,
+        setPendingAction,
+        executePendingAction,
+        openSuggestModalSignal,
       }}
     >
       {children}

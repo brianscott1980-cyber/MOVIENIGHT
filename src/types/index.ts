@@ -128,6 +128,10 @@ export interface SessionConfig {
   updatedAt: string;
 }
 
+export type PendingVoterAction =
+  | { type: 'vote'; movieId: string; sessionId: string }
+  | { type: 'suggest'; sessionId: string };
+
 export interface CreatorMetadata {
   userId?: string | null;
   email?: string | null;
