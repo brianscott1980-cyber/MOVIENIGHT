@@ -67,10 +67,10 @@ export function Step3AiPromptView({
           </div>
           <h2 className="text-lg font-black text-white flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-purple-400" />
-            <span>Step 3: Generate Movie Lineup with Gemini AI</span>
+            <span>Step 3: Generate Movie Lineup (AI Assisted)</span>
           </h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            Describe what you want to watch. Gemini will convert your description to a list of movies, then process them via TMDB on the movies selection view.
+            Describe what you want to watch. AI will convert your description to a list of movies, then process them via TMDB on the movies selection view.
           </p>
         </div>
       </div>
@@ -171,7 +171,7 @@ export function Step3AiPromptView({
             {isGeneratingAi ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin text-purple-300" />
-                <span>{aiGenerationStatus || 'Generating with Gemini...'}</span>
+                <span>{aiGenerationStatus || 'Generating with AI...'}</span>
               </>
             ) : (
               <>

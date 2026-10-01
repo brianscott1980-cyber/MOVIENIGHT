@@ -17,7 +17,7 @@ export function Step3ChoiceView({ onSelectAi, onSelectSources }: Step3ChoiceView
           <span>Step 3: How Would You Like to Curate Your Movies?</span>
         </h2>
         <p className="text-xs sm:text-sm text-slate-400 mt-1">
-          Pick your streaming sources and genres manually from our catalogue, or describe what you feel like watching and let Gemini AI curate a custom lineup processed via TMDB.
+          Pick your streaming sources and genres manually from our catalogue, or describe what you feel like watching and let AI assisted curation create a custom lineup processed via TMDB.
         </p>
       </div>
 
@@ -53,7 +53,7 @@ export function Step3ChoiceView({ onSelectAi, onSelectSources }: Step3ChoiceView
           </div>
         </button>
 
-        {/* Option 2: AI with Gemini */}
+        {/* Option 2: AI Assisted */}
         <button
           type="button"
           onClick={onSelectAi}
@@ -65,7 +65,7 @@ export function Step3ChoiceView({ onSelectAi, onSelectSources }: Step3ChoiceView
                 ✨
               </div>
               <span className="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 text-[10px] sm:text-xs font-black uppercase tracking-wider">
-                Powered by Gemini
+                AI Assisted
               </span>
             </div>
             <div>
@@ -73,13 +73,13 @@ export function Step3ChoiceView({ onSelectAi, onSelectSources }: Step3ChoiceView
                 Use AI to Generate from Description
               </h3>
               <p className="text-xs sm:text-sm text-slate-400 mt-1.5 leading-relaxed">
-                Describe your movie night theme, mood, or favorite film vibes (e.g. &ldquo;90s sci-fi mind benders&rdquo;, &ldquo;fun 80s creature horror comedies&rdquo;, &ldquo;cozy autumn mysteries&rdquo;). Gemini will convert your description to a list of movies, which are then processed via TMDB on the movies selection view.
+                Describe your movie night theme, mood, or favorite film vibes (e.g. &ldquo;90s sci-fi mind benders&rdquo;, &ldquo;fun 80s creature horror comedies&rdquo;, &ldquo;cozy autumn mysteries&rdquo;). AI will convert your description to a list of movies, which are then processed via TMDB on the movies selection view.
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 text-xs font-extrabold text-purple-300 group-hover:text-purple-200">
-            <span>Start with Gemini AI Description</span>
+            <span>Start with AI Assisted Description</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </div>
         </button>

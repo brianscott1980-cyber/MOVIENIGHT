@@ -78,7 +78,7 @@ export function Step3SourcesView({
               className="text-xs text-purple-400 hover:underline transition flex items-center gap-1"
             >
               <Sparkles className="w-3 h-3" />
-              <span>Use Gemini AI instead</span>
+              <span>Use AI assisted instead</span>
             </button>
           </div>
           <h2 className="text-lg font-black text-white flex items-center gap-2">

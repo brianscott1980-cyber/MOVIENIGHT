@@ -81,7 +81,7 @@ export function Step4MoviesView({
           <Loader2 className="w-5 h-5 animate-spin text-purple-400 shrink-0" />
           <div>
             <span className="text-xs font-black uppercase tracking-wider block text-purple-300">
-              Gemini AI &amp; TMDB Curation in Progress
+              AI Assisted &amp; TMDB Curation in Progress
             </span>
             <p className="text-xs text-slate-300">
               {aiGenerationStatus || 'Converting your description to movies and fetching posters, trailers, and streaming details via TMDB...'}

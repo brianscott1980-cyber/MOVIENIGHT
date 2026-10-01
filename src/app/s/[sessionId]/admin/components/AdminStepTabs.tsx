@@ -15,7 +15,7 @@ const SETUP_STAGES = [
     step: 3 as const,
     stageNumber: 1,
     title: '1. Curate Movies',
-    desc: 'Gemini AI prompt or streaming sources',
+    desc: 'AI assisted prompt or streaming sources',
     icon: Sparkles,
   },
   {

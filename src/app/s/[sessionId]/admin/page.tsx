@@ -568,7 +568,7 @@ export default function SessionAdminPage() {
     if (!aiPrompt.trim() || isGeneratingAi) return;
     setIsGeneratingAi(true);
     setAiError('');
-    setAiGenerationStatus('Gemini is generating movie recommendations from your description...');
+    setAiGenerationStatus('AI is generating movie recommendations from your description...');
 
     try {
       const res = await fetch('/api/ai/suggest-movies', {
@@ -798,7 +798,7 @@ export default function SessionAdminPage() {
           />
         )}
 
-        {/* STEP 3 AI MODE: Describe Movie Night with Gemini (Setup Mode Only) */}
+        {/* STEP 3 AI MODE: Describe Movie Night (AI Assisted) (Setup Mode Only) */}
         {isSetupMode && currentStep === 3 && step3Mode === 'ai' && (
           <Step3AiPromptView
             sessionTitle={sessionTitle}

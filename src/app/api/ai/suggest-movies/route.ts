@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
-      return NextResponse.json({ error: 'Gemini API key is not configured. Please set GEMINI_API_KEY in your environment.' }, { status: 500 });
+      return NextResponse.json({ error: 'AI API key is not configured. Please set GEMINI_API_KEY in your environment.' }, { status: 500 });
     }
 
     const targetCount = Math.min(Math.max(Number(count) || 8, 4), 36);
