@@ -450,6 +450,8 @@ export async function listSessionsInDB(): Promise<Array<{
   movieCount: number;
   voteCount: number;
   voterCount: number;
+  viewCount: number;
+  recentViewCount: number;
   sampleMovies: Array<{ id: string; title: string; posterUrl: string; year: number; rating: number }>;
   leaderMovie: { id: string; title: string; posterUrl: string; votes: number } | null;
 }>> {
@@ -466,6 +468,8 @@ export async function listSessionsInDB(): Promise<Array<{
     creator_email: string | null;
     creator_name: string | null;
     creator_avatar: string | null;
+    view_count: number | null;
+    recent_views: any;
     created_at: string;
     updated_at: string;
     movie_count: string;
@@ -483,6 +487,8 @@ export async function listSessionsInDB(): Promise<Array<{
       s.creator_email,
       s.creator_name,
       s.creator_avatar,
+      s.view_count,
+      s.recent_views,
       s.created_at, 
       s.updated_at,
       COUNT(DISTINCT am.movie_id) as movie_count,
@@ -577,6 +583,14 @@ export async function listSessionsInDB(): Promise<Array<{
       movieCount: parseInt(row.movie_count, 10) || 0,
       voteCount: parseInt(row.vote_count, 10) || 0,
       voterCount: parseInt(row.voter_count, 10) || 0,
+      viewCount: Number(row.view_count) || 0,
+      recentViewCount: Array.isArray(row.recent_views)
+        ? (row.recent_views as any[]).filter((v) => {
+            if (!v || !v.timestamp) return false;
+            const diffMs = Date.now() - new Date(v.timestamp).getTime();
+            return !isNaN(diffMs) && diffMs >= 0 && diffMs <= 30 * 60 * 1000;
+          }).length
+        : 0,
       sampleMovies,
       leaderMovie,
     };

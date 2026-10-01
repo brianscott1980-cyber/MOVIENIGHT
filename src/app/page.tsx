@@ -24,6 +24,7 @@ import {
   LogOut,
   ShieldCheck,
   AlertCircle,
+  Eye,
 } from 'lucide-react';
 
 interface SampleMovie {
@@ -58,6 +59,8 @@ interface SessionItem {
   movieCount: number;
   voteCount: number;
   voterCount: number;
+  viewCount?: number;
+  recentViewCount?: number;
   sampleMovies: SampleMovie[];
   leaderMovie: LeaderMovie | null;
 }
@@ -695,21 +698,34 @@ export default function ExploreSessionsPage() {
                     )}
 
                     {/* Meta Stats Strip */}
-                    <div className="flex items-center gap-3 text-xs text-slate-400 mt-2">
+                    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-slate-400 mt-2">
                       <span className="flex items-center gap-1">
-                        <Film className="w-3.5 h-3.5 text-amber-400" />
+                        <Film className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                         <span>{session.movieCount} Films</span>
                       </span>
                       <span>&bull;</span>
                       <span className="flex items-center gap-1">
-                        <Vote className="w-3.5 h-3.5 text-emerald-400" />
+                        <Vote className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                         <span>{session.voteCount} Votes</span>
                       </span>
                       <span>&bull;</span>
                       <span className="flex items-center gap-1">
-                        <Users className="w-3.5 h-3.5 text-purple-400" />
+                        <Users className="w-3.5 h-3.5 text-purple-400 shrink-0" />
                         <span>{session.voterCount} Voters</span>
                       </span>
+                      {session.viewCount !== undefined && session.viewCount > 0 && (
+                        <>
+                          <span>&bull;</span>
+                          <span
+                            className="flex items-center gap-1 text-slate-300 font-medium"
+                            title={`${session.viewCount} views · ${(session.recentViewCount ?? 0)} recent`}
+                          >
+                            <Eye className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                            <span>{session.viewCount}</span>
+                            <span className="text-slate-400">views</span>
+                          </span>
+                        </>
+                      )}
                     </div>
 
                     {/* Sample Movie Posters Collage */}
