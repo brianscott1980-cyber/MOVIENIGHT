@@ -57,8 +57,6 @@ export function ShareSessionModal({
     {
       name: 'WhatsApp',
       subtitle: 'Chat & Groups',
-      badge: 'Popular',
-      badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
       iconText: '💬',
       iconBg: 'bg-emerald-950/80 border-emerald-500/40 text-emerald-400',
       cardHover: 'hover:border-emerald-500/60 hover:bg-emerald-950/20 group-hover:scale-105',
@@ -71,8 +69,6 @@ export function ShareSessionModal({
     {
       name: 'X (Twitter)',
       subtitle: 'Post to feed',
-      badge: 'Trending',
-      badgeColor: 'bg-slate-700/40 text-slate-200 border-slate-600',
       iconText: '𝕏',
       iconBg: 'bg-black border-slate-700 text-white',
       cardHover: 'hover:border-slate-500 hover:bg-slate-800/40 group-hover:scale-105',
@@ -85,8 +81,6 @@ export function ShareSessionModal({
     {
       name: 'Telegram',
       subtitle: 'Channel & Direct',
-      badge: null,
-      badgeColor: '',
       iconNode: <Send className="w-5 h-5 text-sky-400" />,
       iconBg: 'bg-sky-950/80 border-sky-500/40 text-sky-300',
       cardHover: 'hover:border-sky-500/60 hover:bg-sky-950/20 group-hover:scale-105',
@@ -99,8 +93,6 @@ export function ShareSessionModal({
     {
       name: 'Reddit',
       subtitle: 'Movie Communities',
-      badge: null,
-      badgeColor: '',
       iconText: '🤖',
       iconBg: 'bg-orange-950/80 border-orange-500/40 text-orange-400',
       cardHover: 'hover:border-orange-500/60 hover:bg-orange-950/20 group-hover:scale-105',
@@ -113,8 +105,6 @@ export function ShareSessionModal({
     {
       name: 'Facebook',
       subtitle: 'Share to Story / Wall',
-      badge: null,
-      badgeColor: '',
       iconText: 'f',
       iconBg: 'bg-blue-950/80 border-blue-500/40 text-blue-400',
       cardHover: 'hover:border-blue-500/60 hover:bg-blue-950/20 group-hover:scale-105',
@@ -201,17 +191,10 @@ export function ShareSessionModal({
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center">
                     <span className="text-sm font-bold text-white tracking-tight truncate">
                       {channel.name}
                     </span>
-                    {channel.badge && (
-                      <span
-                        className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md border ${channel.badgeColor}`}
-                      >
-                        {channel.badge}
-                      </span>
-                    )}
                   </div>
                   <div className="text-[11px] text-slate-400 font-medium">
                     {channel.subtitle}
