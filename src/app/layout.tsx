@@ -5,6 +5,7 @@ import { AuthModal } from '@/components/AuthModal';
 import Script from 'next/script';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://movienight-swart.vercel.app'),
   title: '🍿 MovieNight - Living Room Ballot & Live Podium',
   description:
     'Vote on your favorite movies for movie night, watch official trailers, view IMDb specs, and follow the live podium standings!',

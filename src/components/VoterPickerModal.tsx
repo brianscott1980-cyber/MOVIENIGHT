@@ -46,17 +46,14 @@ export function VoterPickerModal({ isOpen, onClose }: VoterPickerModalProps = {}
   const { sessionId, currentVoter, setCurrentVoter, sessionData, isPickerOpen, closePicker, refreshSession, executePendingAction } = useVoter();
   const { user, userName, userAvatar, userEmail, signInWithOAuth } = useAuth();
 
-  const actuallyOpen = isOpen !== undefined ? isOpen : isPickerOpen;
+  const isLocked = sessionData?.session?.status === 'locked';
+  const actuallyOpen = !isLocked && Boolean(isOpen !== undefined ? isOpen : isPickerOpen);
   const handleClose = onClose || closePicker;
 
   const { dialogRef, handleCancel, handleClick } = useHtmlDialog({
-    isOpen: Boolean(actuallyOpen),
+    isOpen: actuallyOpen,
     onClose: handleClose,
   });
-
-  if (sessionData?.session?.status === 'locked') {
-    return null;
-  }
 
   const voters = sessionData?.session?.voters || [];
   const ballots = sessionData?.session?.ballots || {};

@@ -51,18 +51,10 @@ export default function SessionMovieDetailPage({
   }, [id, sessionData]);
 
   const movies = sessionData?.allAvailableMovies || [];
-  if (isLoading || !sessionData) return <div className="p-8 text-slate-400">Loading movie…</div>;
-  if (sessionData.expired || !sessionData.session) {
-    notFound();
-  }
   const movieIndex = movies.findIndex((m) => m.id === id);
-  if (movieIndex === -1) {
-    notFound();
-  }
-
-  const movie = movies[movieIndex];
+  const movie = movieIndex !== -1 ? movies[movieIndex] : null;
   const prevMovie = movieIndex > 0 ? movies[movieIndex - 1] : null;
-  const nextMovie = movieIndex < movies.length - 1 ? movies[movieIndex + 1] : null;
+  const nextMovie = movieIndex !== -1 && movieIndex < movies.length - 1 ? movies[movieIndex + 1] : null;
 
   React.useEffect(() => {
     if (movie) {
@@ -82,6 +74,14 @@ export default function SessionMovieDetailPage({
       }
     }
   }, [movie, sessionId, shouldAutoPlay]);
+
+  if (isLoading || !sessionData) return <div className="p-8 text-slate-400">Loading movie…</div>;
+  if (sessionData.expired || !sessionData.session) {
+    notFound();
+  }
+  if (!movie) {
+    notFound();
+  }
 
   const handlePlayTrailer = () => {
     setIsPlaying(true);

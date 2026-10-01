@@ -9,41 +9,49 @@ export async function generateMetadata({
 }: {
   params: Promise<{ sessionId: string }>;
 }): Promise<Metadata> {
-  const { sessionId } = await params;
-  const data = await getSessionOgMetadata(sessionId);
+  try {
+    const { sessionId } = await params;
+    const data = await getSessionOgMetadata(sessionId);
 
-  const title = data?.title ? `🍿 ${data.title} | MovieNight` : `🍿 Movie Night ${sessionId}`;
-  const movieCount = data?.movieCount ?? 0;
-  const countText = movieCount > 0 ? ` featuring ${movieCount} contenders` : '';
-  const description = `Join the voting session${countText}! Cast your votes, watch official trailers, and track the live podium standings in real time.`;
+    const title = data?.title ? `🍿 ${data.title} | MovieNight` : `🍿 Movie Night ${sessionId}`;
+    const movieCount = data?.movieCount ?? 0;
+    const countText = movieCount > 0 ? ` featuring ${movieCount} contenders` : '';
+    const description = `Join the voting session${countText}! Cast your votes, watch official trailers, and track the live podium standings in real time.`;
 
-  const ogImages = [
-    {
-      url: `/s/${sessionId}/opengraph-image`,
-      width: 1200,
-      height: 630,
-      alt: `${data?.title || 'MovieNight Session'} - Ballot & Live Podium`,
-    },
-  ];
+    const ogImages = [
+      {
+        url: `/s/${sessionId}/opengraph-image`,
+        width: 1200,
+        height: 630,
+        alt: `${data?.title || 'MovieNight Session'} - Ballot & Live Podium`,
+      },
+    ];
 
-  return {
-    title,
-    description,
-    openGraph: {
+    return {
       title,
       description,
-      type: 'website',
-      url: `/s/${sessionId}`,
-      siteName: 'MovieNight',
-      images: ogImages,
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: ogImages,
-    },
-  };
+      openGraph: {
+        title,
+        description,
+        type: 'website',
+        url: `/s/${sessionId}`,
+        siteName: 'MovieNight',
+        images: ogImages,
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title,
+        description,
+        images: ogImages,
+      },
+    };
+  } catch (err) {
+    console.error('Failed to generate session metadata:', err);
+    return {
+      title: '🍿 MovieNight',
+      description: 'Vote on movie contenders with your friends.',
+    };
+  }
 }
 
 export default async function SessionLayout({
