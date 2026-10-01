@@ -17,6 +17,7 @@ import {
   Maximize,
   Film,
   RotateCcw,
+  Eye,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -104,6 +105,31 @@ export default function SessionLivePage() {
       if (heartbeatInterval) clearInterval(heartbeatInterval);
     };
   }, [sessionId, isWinnerRevealed, fetchSession]);
+
+  // Record session view asynchronously in background (fire-and-forget)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const viewKey = `movienight_viewed_${sessionId}`;
+    const lastView = sessionStorage.getItem(viewKey);
+    if (!lastView) {
+      sessionStorage.setItem(viewKey, Date.now().toString());
+      try {
+        const payload = JSON.stringify({ sessionId });
+        if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+          navigator.sendBeacon('/api/session/view', new Blob([payload], { type: 'application/json' }));
+        } else {
+          fetch('/api/session/view', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: payload,
+            keepalive: true,
+          }).catch(() => {});
+        }
+      } catch (e) {
+        // Silently ignore
+      }
+    }
+  }, [sessionId]);
 
   const handleCrownWinner = async () => {
     if (!data || !data.leaderboard || data.leaderboard.length === 0) return;
@@ -260,6 +286,25 @@ export default function SessionLivePage() {
                 <span>{sessionId.replace(/\D/g, '').length === 8 ? `${sessionId.slice(0, 4)} ${sessionId.slice(4)}` : sessionId}</span>
                 <SessionCopyActions sessionId={sessionId} />
               </div>
+
+              {data?.session?.viewCount !== undefined && data.session.viewCount > 0 && (
+                <div
+                  className="h-8 inline-flex items-center gap-1.5 px-3 rounded-full bg-slate-800/80 border border-slate-700/60 text-slate-300 text-xs font-medium"
+                  title={`${data.session.viewCount} total view${data.session.viewCount === 1 ? '' : 's'} · ${(data.session.recentViewCount ?? 1)} visitor${(data.session.recentViewCount ?? 1) === 1 ? '' : 's'} in last 30m`}
+                >
+                  <Eye className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                  <span className="font-semibold text-white">{data.session.viewCount}</span>
+                  <span className="text-slate-400">view{data.session.viewCount === 1 ? '' : 's'}</span>
+                  {(data.session.recentViewCount ?? 0) > 0 && (
+                    <>
+                      <span className="text-slate-600">&bull;</span>
+                      <Users className="w-3 h-3 text-emerald-400 shrink-0" />
+                      <span className="text-emerald-300 font-semibold">{data.session.recentViewCount}</span>
+                      <span className="text-slate-400 hidden xs:inline">recent</span>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
 
             <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white flex items-center justify-center md:justify-start gap-2 sm:gap-3">

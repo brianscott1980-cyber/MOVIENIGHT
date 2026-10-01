@@ -15,6 +15,7 @@ import {
   pauseSessionInDB,
   resumeSessionInDB,
   deleteSessionInDB,
+  recordSessionViewInDB,
 } from './db';
 import { CustomMovieInput, Movie } from '@/types';
 
@@ -100,5 +101,12 @@ export async function getHostPastVoters(
   creatorEmail?: string | null
 ): Promise<Voter[]> {
   return getHostPastVotersInDB(creatorUserId, creatorEmail);
+}
+
+export async function recordSessionView(
+  sessionId: string,
+  voterInfo?: { voterId?: string; voterName?: string; avatar?: string }
+): Promise<void> {
+  return recordSessionViewInDB(sessionId, voterInfo);
 }
 

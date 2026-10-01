@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Sparkles, EyeOff, Tv, Settings } from 'lucide-react';
+import { Sparkles, EyeOff, Tv, Settings, Eye, Users } from 'lucide-react';
 import { SessionCopyActions } from '@/components/SessionCopyActions';
 import { VoterRollCall } from '@/components/VoterRollCall';
 import { SessionConfig } from '@/types';
@@ -58,6 +58,25 @@ export function BallotHeroHeader({
                 <div className="h-8 inline-flex items-center gap-1 px-2.5 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs font-bold">
                   <EyeOff className="w-3 h-3 shrink-0" />
                   <span>Secret Ballot</span>
+                </div>
+              )}
+
+              {session.viewCount !== undefined && session.viewCount > 0 && (
+                <div
+                  className="h-8 inline-flex items-center gap-1.5 px-3 rounded-full bg-slate-800/80 border border-slate-700/60 text-slate-300 text-xs font-medium"
+                  title={`${session.viewCount} total view${session.viewCount === 1 ? '' : 's'} · ${(session.recentViewCount ?? 1)} visitor${(session.recentViewCount ?? 1) === 1 ? '' : 's'} in last 30m`}
+                >
+                  <Eye className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                  <span className="font-semibold text-white">{session.viewCount}</span>
+                  <span className="text-slate-400">view{session.viewCount === 1 ? '' : 's'}</span>
+                  {(session.recentViewCount ?? 0) > 0 && (
+                    <>
+                      <span className="text-slate-600">&bull;</span>
+                      <Users className="w-3 h-3 text-emerald-400 shrink-0" />
+                      <span className="text-emerald-300 font-semibold">{session.recentViewCount}</span>
+                      <span className="text-slate-400 hidden xs:inline">recent</span>
+                    </>
+                  )}
                 </div>
               )}
             </div>

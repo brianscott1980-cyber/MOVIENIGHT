@@ -165,6 +165,37 @@ export function VoterProvider({
     };
   }, [sessionId, refreshSession]);
 
+  // Record session view asynchronously in background (fire-and-forget, performance over accuracy)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const viewKey = `movienight_viewed_${sessionId}`;
+    const lastView = sessionStorage.getItem(viewKey);
+    // Ping at most once per tab/session visit
+    if (!lastView) {
+      sessionStorage.setItem(viewKey, Date.now().toString());
+      try {
+        const payload = JSON.stringify({
+          sessionId,
+          voterId: currentVoter?.id,
+          voterName: currentVoter?.name || userName || undefined,
+          avatar: currentVoter?.avatar || userAvatar || undefined,
+        });
+        if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+          navigator.sendBeacon('/api/session/view', new Blob([payload], { type: 'application/json' }));
+        } else {
+          fetch('/api/session/view', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: payload,
+            keepalive: true,
+          }).catch(() => {});
+        }
+      } catch (e) {
+        // Silently ignore to guarantee zero performance impact
+      }
+    }
+  }, [sessionId, currentVoter?.id, currentVoter?.name, currentVoter?.avatar, userName, userAvatar]);
+
   // Sync stored voter from localStorage on load or auto-identify OAuth users
   useEffect(() => {
     if (typeof window === 'undefined') return;

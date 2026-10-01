@@ -103,6 +103,8 @@ export async function ensureDbInitialized(): Promise<void> {
     ALTER TABLE sessions ALTER COLUMN max_suggestions_per_voter SET DEFAULT 2;
     ALTER TABLE sessions ADD COLUMN IF NOT EXISTS vote_weight_mode TEXT DEFAULT 'ranked';
     ALTER TABLE sessions ALTER COLUMN vote_weight_mode SET DEFAULT 'ranked';
+    ALTER TABLE sessions ADD COLUMN IF NOT EXISTS view_count INT DEFAULT 0;
+    ALTER TABLE sessions ADD COLUMN IF NOT EXISTS recent_views JSONB DEFAULT '[]'::jsonb;
 
     CREATE TABLE IF NOT EXISTS voters (
       id TEXT PRIMARY KEY,
@@ -844,6 +846,23 @@ export async function computeSessionResponseFromDB(rawSessionId?: string): Promi
     isAiCurated: Boolean((sessionRow as any).is_ai_curated),
     aiPrompt: (sessionRow as any).ai_prompt || undefined,
     aiMovieIds: (sessionRow as any).ai_movie_ids || [],
+    viewCount: Number((sessionRow as any).view_count) || 0,
+    recentViewCount: Array.isArray((sessionRow as any).recent_views)
+      ? ((sessionRow as any).recent_views as any[]).filter((v) => {
+          if (!v || !v.timestamp) return false;
+          const diffMs = Date.now() - new Date(v.timestamp).getTime();
+          return !isNaN(diffMs) && diffMs >= 0 && diffMs <= 30 * 60 * 1000;
+        }).length
+      : 0,
+    recentVisitors: Array.isArray((sessionRow as any).recent_views)
+      ? ((sessionRow as any).recent_views as any[])
+          .filter((v) => {
+            if (!v || !v.timestamp) return false;
+            const diffMs = Date.now() - new Date(v.timestamp).getTime();
+            return !isNaN(diffMs) && diffMs >= 0 && diffMs <= 30 * 60 * 1000;
+          })
+          .slice(0, 10)
+      : [],
     createdAt,
     updatedAt,
   };
@@ -1551,6 +1570,56 @@ export async function getSessionOgMetadata(rawSessionId: string): Promise<{
   } catch (err) {
     console.error('Error fetching session OG metadata:', err);
     return null;
+  }
+}
+
+/**
+ * Record a page view / visitor asynchronously in the background.
+ * Optimized for maximum performance (low latency, fire-and-forget, bounded JSONB array).
+ */
+export async function recordSessionViewInDB(
+  rawSessionId: string,
+  voterInfo?: { voterId?: string; voterName?: string; avatar?: string }
+): Promise<void> {
+  try {
+    let sid = (rawSessionId || '').trim();
+    const digitsOnly = sid.replace(/\D/g, '');
+    if (digitsOnly.length >= 6 && digitsOnly.length <= 8) {
+      sid = digitsOnly;
+    }
+    if (!sid) return;
+
+    await ensureDbInitialized();
+    const pool = getPool();
+
+    const newViewObj = JSON.stringify({
+      timestamp: new Date().toISOString(),
+      voterId: voterInfo?.voterId || null,
+      voterName: voterInfo?.voterName || null,
+      avatar: voterInfo?.avatar || null,
+    });
+
+    // Increment view_count atomically and append to recent_views (pruned to last 20 entries)
+    await pool.query(
+      `
+      UPDATE sessions
+      SET view_count = COALESCE(view_count, 0) + 1,
+          recent_views = (
+            SELECT COALESCE(jsonb_agg(elem), '[]'::jsonb)
+            FROM (
+              SELECT jsonb_array_elements(
+                jsonb_build_array($2::jsonb) || COALESCE(recent_views, '[]'::jsonb)
+              ) AS elem
+              LIMIT 20
+            ) sub
+          )
+      WHERE session_id = $1
+      `,
+      [sid, newViewObj]
+    );
+  } catch (err) {
+    // Non-blocking, silence error to never crash or hold up request
+    console.warn('Silent warning: Failed to record async session view:', err);
   }
 }
 

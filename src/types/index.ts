@@ -132,6 +132,9 @@ export interface SessionConfig {
   isAiCurated?: boolean;
   aiPrompt?: string;
   aiMovieIds?: string[];
+  viewCount?: number;
+  recentViewCount?: number;
+  recentVisitors?: Array<{ timestamp: string; voterId?: string; voterName?: string; avatar?: string }>;
   createdAt: string;
   updatedAt: string;
 }
