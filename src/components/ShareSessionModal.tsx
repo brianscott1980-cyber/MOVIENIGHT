@@ -161,10 +161,7 @@ export function ShareSessionModal({
 
         {/* Featured Session Spotlight Banner */}
         <div className="rounded-2xl border border-slate-800 bg-slate-950/90 p-4 shadow-inner">
-          <div className="flex items-center justify-between gap-2 mb-1.5">
-            <span className="text-xs font-semibold text-slate-400">
-              Session Contenders &amp; Ballot
-            </span>
+          <div className="flex items-center justify-end gap-2 mb-1.5">
             <span className="text-xs font-mono font-bold text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-lg">
               {formattedCode}
             </span>
