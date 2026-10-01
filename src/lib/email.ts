@@ -555,23 +555,32 @@ export async function sendSessionLaunchedEmail({
       return;
     }
 
-    // 1. Send Host Email ("Your MovieNight ballot has started") via BCC
+    // 1. Send Host Email ("Your MovieNight ballot has started")
     if (hostRecipients.size > 0 && (!recipientRole || recipientRole === 'host')) {
       const hostTargets = Array.from(hostRecipients);
       const hostSubject = `🍿 Your MovieNight ballot has started: ${sessionTitle} (Code: ${formattedCode})`;
       const hostHtml = buildSessionLaunchedHtml({ ...sharedContext, role: 'host' });
 
       try {
-        const info = await transporter.sendMail({
-          from: getSenderAddress(),
-          to: getSenderAddress(),
-          bcc: hostTargets,
-          subject: hostSubject,
-          html: hostHtml,
-        });
-        console.info(`[Email] Host notification sent via BCC to: ${hostTargets.join(', ')}. MessageId: ${info.messageId}`);
+        const mailOptions =
+          hostTargets.length === 1
+            ? {
+                from: getSenderAddress(),
+                to: hostTargets[0],
+                subject: hostSubject,
+                html: hostHtml,
+              }
+            : {
+                from: getSenderAddress(),
+                to: getSenderAddress(),
+                bcc: hostTargets,
+                subject: hostSubject,
+                html: hostHtml,
+              };
+        const info = await transporter.sendMail(mailOptions);
+        console.info(`[Email] Host notification sent to: ${hostTargets.join(', ')}. MessageId: ${info.messageId}`);
       } catch (err) {
-        console.error('[Email] Failed to send host session launch notification via BCC:', err);
+        console.error('[Email] Failed to send host session launch notification:', err);
       }
     }
 

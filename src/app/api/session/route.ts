@@ -104,11 +104,15 @@ export async function POST(request: Request) {
       }
       data = await launchSession(sessionId);
       effectiveSessionId = data.session.sessionId;
-      // Asynchronously notify host and admin that voting has started (non-blocking)
+      // Notify host and admin that voting has started
       if (data?.session) {
         const activeIds = new Set(data.session.activeMovieIds || []);
         const contenders = (data.allAvailableMovies || []).filter((m) => activeIds.has(m.id));
-        void sendSessionLaunchedEmail({ session: data.session, contenders });
+        try {
+          await sendSessionLaunchedEmail({ session: data.session, contenders });
+        } catch (emailErr) {
+          console.error('[Email] Failed to send session launch email:', emailErr);
+        }
       }
     } else if (action === 'pause') {
       const { pauseSession } = await import('@/lib/storage');
@@ -148,17 +152,21 @@ export async function POST(request: Request) {
         winnerMovieId: winnerId,
       });
 
-      // Asynchronously notify participants, host, and admin that winner was crowned (non-blocking)
+      // Notify participants, host, and admin that winner was crowned
       if (data?.session) {
         const crownedMovie =
           data.leaderboard?.find((item) => item.movie.id === winnerId)?.movie ||
           data.allAvailableMovies?.find((m) => m.id === winnerId) ||
           null;
-        void sendSessionWinnerCrownedEmail({
-          session: data.session,
-          winnerMovie: crownedMovie,
-          leaderboard: data.leaderboard,
-        });
+        try {
+          await sendSessionWinnerCrownedEmail({
+            session: data.session,
+            winnerMovie: crownedMovie,
+            leaderboard: data.leaderboard,
+          });
+        } catch (emailErr) {
+          console.error('[Email] Failed to send winner crowned email:', emailErr);
+        }
       }
     } else if (action === 'unlock') {
       data = await updateSessionConfig(sessionId, {
