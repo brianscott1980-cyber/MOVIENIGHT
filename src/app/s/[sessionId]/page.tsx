@@ -20,7 +20,7 @@ import { BallotMovieGrid } from './components/BallotMovieGrid';
 
 export default function SessionVotingPage() {
   const router = useRouter();
-  const { sessionId, sessionData, votedMovieIds, refreshSession, currentVoter, openPicker, isLoading, openSuggestModalSignal, setPendingAction } = useVoter();
+  const { sessionId, sessionData, votedMovieIds, refreshSession, currentVoter, openPicker, isLoading, openSuggestModalSignal, setPendingAction, toggleMovieVote } = useVoter();
   const { user, userEmail } = useAuth();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -455,8 +455,12 @@ export default function SessionVotingPage() {
         onClose={() => setIsSuggestModalOpen(false)}
         sessionId={sessionId}
         addedByVoterId={currentVoter?.id}
-        onMovieAdded={async () => {
+        canVote={sessionData?.session?.status === 'voting'}
+        onMovieAdded={async (movie, andVote) => {
           await refreshSession();
+          if (andVote && movie?.id) {
+            await toggleMovieVote(movie.id);
+          }
         }}
       />
     </div>

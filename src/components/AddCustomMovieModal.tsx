@@ -10,16 +10,17 @@ import { trackAddMovie } from '@/lib/analytics';
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  onMovieAdded: (movie: Movie) => void;
+  onMovieAdded: (movie: Movie, andVote?: boolean) => void;
   sessionId: string;
   addedByVoterId?: string;
+  canVote?: boolean;
 }
 
 export function AddCustomMovieModal(props: Props) {
   return props.isOpen ? <MovieForm key={props.sessionId} {...props} /> : null;
 }
 
-function MovieForm({ onClose, onMovieAdded, sessionId, addedByVoterId }: Props) {
+function MovieForm({ onClose, onMovieAdded, sessionId, addedByVoterId, canVote = true }: Props) {
   const [manual, setManual] = useState(false);
   const [title, setTitle] = useState('');
   const [year, setYear] = useState(new Date().getFullYear());
@@ -100,8 +101,7 @@ function MovieForm({ onClose, onMovieAdded, sessionId, addedByVoterId }: Props) 
     const match = value.match(/(?:youtu\.be\/|[?&]v=|youtube\.com\/embed\/)([\w-]{11})/);
     return match?.[1] || value.trim();
   }
-  async function submit(event: React.FormEvent) {
-    event.preventDefault();
+  async function handleAdd(andVote = false) {
     if (importing || isSubmitting || !title.trim() || (!manual && !selected)) return;
     setIsSubmitting(true); setError('');
     const payload: CustomMovieInput = manual ? {
@@ -124,9 +124,15 @@ function MovieForm({ onClose, onMovieAdded, sessionId, addedByVoterId }: Props) 
         addedByVoterId,
       });
 
-      onMovieAdded(data.movie); onClose();
+      onMovieAdded(data.movie, andVote);
+      onClose();
     } catch (err) { setError(err instanceof Error ? err.message : 'Could not add movie.'); }
     finally { setIsSubmitting(false); }
+  }
+
+  function submit(event: React.FormEvent) {
+    event.preventDefault();
+    handleAdd(false);
   }
 
   return (
@@ -345,9 +351,34 @@ function MovieForm({ onClose, onMovieAdded, sessionId, addedByVoterId }: Props) 
           </div>
           </>}
 
-          <div className="pt-4 flex flex-row items-center justify-end gap-2.5 sm:gap-3 border-t border-slate-800">
-            <button type="button" onClick={onClose} className="flex-1 sm:flex-initial px-4 py-2.5 text-slate-400 hover:text-white text-xs font-bold rounded-xl border border-slate-800 sm:border-transparent text-center">Cancel</button>
-            <button type="submit" disabled={isSubmitting || importing || !title.trim() || (!manual && !selected)} className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs sm:text-sm flex gap-2 items-center justify-center disabled:opacity-40 shadow-lg glow-gold"><Plus className="w-4 h-4" /><span>{isSubmitting ? 'Adding…' : 'Add Movie'}</span></button>
+          <div className="pt-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 border-t border-slate-800">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2.5 text-slate-400 hover:text-white text-xs font-bold rounded-xl border border-slate-800 sm:border-transparent text-center order-last sm:order-first"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => handleAdd(false)}
+              disabled={isSubmitting || importing || !title.trim() || (!manual && !selected)}
+              className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-bold text-xs sm:text-sm flex gap-2 items-center justify-center disabled:opacity-40 border border-slate-700 transition active:scale-95"
+            >
+              <Plus className="w-4 h-4" />
+              <span>{isSubmitting ? 'Adding…' : 'Add Movie'}</span>
+            </button>
+            {canVote && (
+              <button
+                type="button"
+                onClick={() => handleAdd(true)}
+                disabled={isSubmitting || importing || !title.trim() || (!manual && !selected)}
+                className="flex-1 sm:flex-initial px-4 sm:px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs sm:text-sm flex gap-2 items-center justify-center disabled:opacity-40 shadow-lg glow-gold transition active:scale-95"
+              >
+                <span>🗳️</span>
+                <span>{isSubmitting ? 'Adding…' : 'Add Movie & Vote'}</span>
+              </button>
+            )}
           </div>
         </form>
         <p className="mt-4 text-[10px] text-slate-500">Movie data and images from <a href="https://www.themoviedb.org" target="_blank" rel="noreferrer" className="underline">TMDB</a>. This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
