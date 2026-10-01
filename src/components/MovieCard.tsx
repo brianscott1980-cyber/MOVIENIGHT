@@ -54,7 +54,7 @@ export function MovieCard({ movie, onOpenDetails }: MovieCardProps) {
 
   return (
     <div
-      className={`group relative flex flex-col rounded-2xl border transition-all duration-300 overflow-hidden bg-slate-900/90 shadow-lg ${
+      className={`group relative flex flex-col rounded-xl sm:rounded-2xl border transition-all duration-300 overflow-hidden bg-slate-900/90 shadow-lg ${
         voted
           ? 'border-emerald-400/80 ring-2 ring-emerald-400/30 shadow-emerald-500/20 glow-cyan'
           : rankPosition === 1
@@ -63,35 +63,38 @@ export function MovieCard({ movie, onOpenDetails }: MovieCardProps) {
       }`}
     >
       {/* Overall Leaderboard Position Badges (Gold, Silver, Bronze) */}
-      <div className="absolute top-2.5 left-2.5 z-30 flex flex-col gap-1 items-start pointer-events-none">
+      <div className="absolute top-1.5 sm:top-2.5 left-1.5 sm:left-2.5 z-30 flex flex-col gap-1 items-start pointer-events-none">
         {rankPosition === 1 && (
-          <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[11px] shadow-lg glow-gold">
-            <Crown className="w-3.5 h-3.5 fill-slate-950" />
-            <span>🥇 {scoreItem?.isJointPosition ? 'JOINT ' : ''}1ST PLACE ({totalVotes} {totalVotes === 1 ? 'vote' : 'votes'})</span>
+          <div className="flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[10px] sm:text-[11px] shadow-lg glow-gold">
+            <Crown className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-slate-950" />
+            <span className="sm:hidden">1st ({totalVotes})</span>
+            <span className="hidden sm:inline">🥇 {scoreItem?.isJointPosition ? 'JOINT ' : ''}1ST PLACE ({totalVotes} {totalVotes === 1 ? 'vote' : 'votes'})</span>
           </div>
         )}
         {rankPosition === 2 && (
-          <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-950 font-black text-[11px] shadow-lg">
-            <span>🥈 {scoreItem?.isJointPosition ? 'JOINT ' : ''}2ND PLACE ({totalVotes})</span>
+          <div className="flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-950 font-black text-[10px] sm:text-[11px] shadow-lg">
+            <span className="sm:hidden">2nd ({totalVotes})</span>
+            <span className="hidden sm:inline">🥈 {scoreItem?.isJointPosition ? 'JOINT ' : ''}2ND PLACE ({totalVotes})</span>
           </div>
         )}
         {rankPosition === 3 && (
-          <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-700 text-amber-100 font-black text-[11px] shadow-lg">
-            <span>🥉 {scoreItem?.isJointPosition ? 'JOINT ' : ''}3RD PLACE ({totalVotes})</span>
+          <div className="flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 rounded-full bg-amber-700 text-amber-100 font-black text-[10px] sm:text-[11px] shadow-lg">
+            <span className="sm:hidden">3rd ({totalVotes})</span>
+            <span className="hidden sm:inline">🥉 {scoreItem?.isJointPosition ? 'JOINT ' : ''}3RD PLACE ({totalVotes})</span>
           </div>
         )}
         {voted && (
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500 text-slate-950 font-black text-[10px] shadow">
-            <Check className="w-3 h-3 text-slate-950" />
-            <span>YOU VOTED</span>
+          <div className="flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-500 text-slate-950 font-black text-[9px] sm:text-[10px] shadow">
+            <Check className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-slate-950 stroke-[3]" />
+            <span>VOTED</span>
           </div>
         )}
       </div>
 
-      {/* Landscape Movie Artwork Thumbnail with Hover-to-Play Overlay */}
+      {/* Movie Artwork Thumbnail with Click to Open Details */}
       <div
         onClick={() => onOpenDetails(movie, true)}
-        className="relative aspect-[64/39] sm:aspect-[32/27] w-full overflow-hidden bg-slate-950 cursor-pointer group/thumb"
+        className="relative aspect-[15/16] sm:aspect-[32/27] w-full overflow-hidden bg-slate-950 cursor-pointer group/thumb"
       >
         {/* Ambient blurred backdrop for letterbox-free aesthetics */}
         <img
@@ -101,12 +104,24 @@ export function MovieCard({ movie, onOpenDetails }: MovieCardProps) {
           className="absolute inset-0 w-full h-full object-cover object-top blur-xl scale-115 opacity-40 pointer-events-none"
         />
 
-        {/* Sharp landscape movie artwork */}
+        {/* Sharp movie artwork: poster focus on mobile, landscape on desktop */}
+        <img
+          src={movie.posterUrl || movie.backdropUrl}
+          alt={`${movie.title} artwork`}
+          loading="lazy"
+          className="relative w-full h-full object-cover object-top sm:hidden group-hover/thumb:scale-105 transition-transform duration-500"
+          onError={(e) => {
+            const target = e.currentTarget;
+            if (target.src !== movie.posterUrl) {
+              target.src = movie.posterUrl;
+            }
+          }}
+        />
         <img
           src={movie.backdropUrl || movie.posterUrl}
           alt={`${movie.title} artwork`}
           loading="lazy"
-          className="relative w-full h-full object-cover object-top group-hover/thumb:scale-105 transition-transform duration-500"
+          className="relative w-full h-full object-cover object-top hidden sm:block group-hover/thumb:scale-105 transition-transform duration-500"
           onError={(e) => {
             const target = e.currentTarget;
             if (target.src !== movie.posterUrl) {
@@ -118,23 +133,23 @@ export function MovieCard({ movie, onOpenDetails }: MovieCardProps) {
         {/* Shadow vignette gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent pointer-events-none" />
 
-        {/* Year, MPAA Rating & IMDb Score Badges */}
-        <div className="absolute top-2.5 right-2.5 z-20 flex flex-wrap items-center gap-1.5 justify-end max-w-[80%] pointer-events-none">
+        {/* Year & Rating Badges */}
+        <div className="absolute top-1.5 sm:top-2.5 right-1.5 sm:right-2.5 z-20 flex flex-wrap items-center gap-1 sm:gap-1.5 justify-end max-w-[80%] pointer-events-none">
           {movie.rated && movie.rated !== 'N/A' && (
-            <span className="px-1.5 py-0.5 rounded bg-black/80 backdrop-blur-sm text-slate-300 text-[10px] font-bold border border-white/10">
+            <span className="hidden sm:inline px-1.5 py-0.5 rounded bg-black/80 backdrop-blur-sm text-slate-300 text-[10px] font-bold border border-white/10">
               {movie.rated}
             </span>
           )}
-          <span className="px-2 py-0.5 rounded bg-black/80 backdrop-blur-sm text-slate-300 text-xs font-mono font-medium border border-white/10">
+          <span className="px-1.5 sm:px-2 py-0.5 rounded bg-black/80 backdrop-blur-sm text-slate-300 text-[10px] sm:text-xs font-mono font-medium border border-white/10">
             {movie.year}
           </span>
-          <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-yellow-500 text-slate-950 text-xs font-black shadow">
-            <Star className="w-3 h-3 fill-slate-950" />
+          <span className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 rounded bg-yellow-500 text-slate-950 text-[10px] sm:text-xs font-black shadow">
+            <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-slate-950" />
             <span>{(movie.tmdbRating ?? movie.imdbRating).toFixed(1)}</span>
           </span>
         </div>
 
-        {/* Hover Overlay: Reveals 'Play Trailer' Button */}
+        {/* Hover/Tap Overlay: Reveals 'Play Trailer' Button */}
         <div className="absolute inset-0 z-20 bg-slate-950/65 opacity-0 group-hover/thumb:opacity-100 transition-all duration-300 flex items-center justify-center backdrop-blur-[2px]">
           <button
             type="button"
@@ -142,18 +157,19 @@ export function MovieCard({ movie, onOpenDetails }: MovieCardProps) {
               e.stopPropagation();
               onOpenDetails(movie, true);
             }}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-red-600 hover:bg-red-500 text-white font-black text-xs sm:text-sm shadow-2xl transform scale-90 group-hover/thumb:scale-100 transition-all duration-200 border border-white/30 glow-red hover:shadow-red-500/50 active:scale-95"
+            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-full bg-red-600 hover:bg-red-500 text-white font-black text-xs sm:text-sm shadow-2xl transform scale-90 group-hover/thumb:scale-100 transition-all duration-200 border border-white/30 glow-red hover:shadow-red-500/50 active:scale-95"
           >
-            <Play className="w-4 h-4 fill-white ml-0.5" />
-            <span>Play Trailer</span>
+            <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-white ml-0.5" />
+            <span className="sm:hidden">Trailer</span>
+            <span className="hidden sm:inline">Play Trailer</span>
           </button>
         </div>
 
-        {/* Real-time Voter Avatars - Always visible */}
+        {/* Real-time Voter Avatars - Always visible on desktop */}
         {votersWhoVoted.length > 0 && (
           <div
             onClick={(e) => e.stopPropagation()}
-            className="absolute bottom-2.5 left-2.5 z-25 flex items-center gap-1.5 pointer-events-auto"
+            className="hidden sm:flex absolute bottom-2.5 left-2.5 z-25 items-center gap-1.5 pointer-events-auto"
           >
             <div className="flex items-center -space-x-2">
               {votersWhoVoted.map((voter) => (
@@ -182,10 +198,10 @@ export function MovieCard({ movie, onOpenDetails }: MovieCardProps) {
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 p-4 flex flex-col justify-between">
+      <div className="flex-1 p-2.5 sm:p-4 flex flex-col justify-between">
         <div>
-          {/* Genre Tag & Runtime */}
-          <div className="flex items-center justify-between gap-2 mb-1.5">
+          {/* Genre Tag & Runtime - hidden on mobile for clean card layout */}
+          <div className="hidden sm:flex items-center justify-between gap-2 mb-1.5">
             <span
               className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${genreMeta.color}`}
             >
@@ -213,13 +229,14 @@ export function MovieCard({ movie, onOpenDetails }: MovieCardProps) {
           {/* Title */}
           <h3
             onClick={() => onOpenDetails(movie, false)}
-            className="text-base sm:text-lg font-bold text-white tracking-tight cursor-pointer hover:text-amber-300 transition line-clamp-1"
+            className="text-xs sm:text-lg font-bold text-white tracking-tight cursor-pointer hover:text-amber-300 transition line-clamp-2 sm:line-clamp-1 leading-snug text-center sm:text-left"
+            title={movie.title}
           >
             {movie.title}
           </h3>
 
-          {/* Director & Lead Cast */}
-          <div className="mt-1 text-xs text-slate-400 space-y-0.5">
+          {/* Director & Lead Cast - hidden on mobile */}
+          <div className="hidden sm:block mt-1 text-xs text-slate-400 space-y-0.5">
             <p className="truncate">
               <span className="text-slate-400">Dir:</span>{' '}
               <span className="text-slate-200">{movie.director}</span>
@@ -230,8 +247,8 @@ export function MovieCard({ movie, onOpenDetails }: MovieCardProps) {
             </p>
           </div>
 
-          {/* Rotten Tomatoes / Awards badge */}
-          <div className="flex items-center gap-2 mt-2">
+          {/* Rotten Tomatoes / Awards badge - hidden on mobile */}
+          <div className="hidden sm:flex items-center gap-2 mt-2">
             {movie.rottenTomatoes && (
               <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-300 bg-rose-950/40 border border-rose-900/40 px-2 py-0.5 rounded-full">
                 <span>🍅</span>
@@ -246,9 +263,9 @@ export function MovieCard({ movie, onOpenDetails }: MovieCardProps) {
             )}
           </div>
 
-          {/* Streaming Platform Badges */}
+          {/* Streaming Platform Badges - hidden on mobile */}
           {movie.streamingSources && movie.streamingSources.length > 0 && (
-            <div className="flex flex-wrap items-center gap-1 mt-2">
+            <div className="hidden sm:flex flex-wrap items-center gap-1 mt-2">
               {movie.streamingSources.slice(0, 3).map((source) => STREAMING_PLATFORMS.find((platform) => platform.id === normalizeMovieSource(source))?.name || source).map((source) => (
                 <span
                   key={source}
@@ -280,8 +297,8 @@ export function MovieCard({ movie, onOpenDetails }: MovieCardProps) {
           )}
         </div>
 
-        {/* Single Clean VOTE Button Under Movie Tile */}
-        <div className="mt-3 sm:mt-4 pt-2.5 sm:pt-3 border-t border-slate-800">
+        {/* Clean VOTE Button Under Movie Tile */}
+        <div className="mt-2 sm:mt-4 pt-2 sm:pt-3 border-t border-slate-800">
           <div className="hidden sm:flex items-center justify-between text-[11px] text-slate-400 mb-1.5">
             <span>
               {totalVotes > 0 ? (
@@ -317,7 +334,7 @@ export function MovieCard({ movie, onOpenDetails }: MovieCardProps) {
                 ? 'Vote limit reached. Unvote a movie to free a vote.'
                 : undefined
             }
-            className={`disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-auto w-full h-11 rounded-xl text-xs sm:text-sm font-black transition flex items-center justify-center gap-2 border active:scale-98 shadow-md ${
+            className={`disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-auto w-full h-9 sm:h-11 rounded-lg sm:rounded-xl text-xs sm:text-sm font-black transition flex items-center justify-center gap-1.5 sm:gap-2 border active:scale-98 shadow-md ${
               sessionData?.session?.status === 'locked'
                 ? voted
                   ? 'bg-emerald-950/40 border-emerald-800/60 text-emerald-400 cursor-not-allowed'
@@ -330,24 +347,27 @@ export function MovieCard({ movie, onOpenDetails }: MovieCardProps) {
             {sessionData?.session?.status === 'locked' ? (
               voted ? (
                 <>
-                  <Check className="w-4 h-4 text-emerald-400 stroke-[3]" />
-                  <span>You Voted (Voting Closed)</span>
+                  <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 stroke-[3]" />
+                  <span className="sm:hidden">Voted</span>
+                  <span className="hidden sm:inline">You Voted (Voting Closed)</span>
                 </>
               ) : (
                 <>
                   <span>🔒</span>
-                  <span>Voting Closed</span>
+                  <span className="sm:hidden">Closed</span>
+                  <span className="hidden sm:inline">Voting Closed</span>
                 </>
               )
             ) : voted ? (
               <>
-                <Check className="w-4 h-4 text-slate-950 stroke-[3]" />
-                <span>Voted! (Tap to undo)</span>
+                <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-950 stroke-[3]" />
+                <span className="sm:hidden">Voted</span>
+                <span className="hidden sm:inline">Voted! (Tap to undo)</span>
               </>
             ) : (
               <>
                 <span>🗳️</span>
-                <span>{voteLimitReached ? 'Limit reached — unvote to free a vote' : 'Vote'}</span>
+                <span>{voteLimitReached ? 'Limit' : 'Vote'}</span>
               </>
             )}
           </button>

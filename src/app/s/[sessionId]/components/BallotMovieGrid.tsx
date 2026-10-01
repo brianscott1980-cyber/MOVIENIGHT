@@ -25,12 +25,12 @@ export function BallotMovieGrid({
 }: BallotMovieGridProps) {
   if (isLoading && filteredMovies.length === 0) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6 animate-pulse">
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-6 animate-pulse">
         {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="bg-slate-900/60 rounded-3xl border border-slate-800 p-4 space-y-3">
-            <div className="w-full aspect-[2/3] bg-slate-800/80 rounded-2xl" />
-            <div className="h-4 bg-slate-800 rounded-md w-3/4" />
-            <div className="h-3 bg-slate-800/60 rounded-md w-1/2" />
+          <div key={i} className="bg-slate-900/60 rounded-2xl sm:rounded-3xl border border-slate-800 p-2 sm:p-4 space-y-2 sm:space-y-3">
+            <div className="w-full aspect-[2/3] bg-slate-800/80 rounded-xl sm:rounded-2xl" />
+            <div className="h-3 sm:h-4 bg-slate-800 rounded-md w-3/4" />
+            <div className="h-2.5 sm:h-3 bg-slate-800/60 rounded-md w-1/2" />
           </div>
         ))}
       </div>
@@ -75,7 +75,7 @@ export function BallotMovieGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
+    <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-6">
       {filteredMovies.map((movie) => (
         <MovieCard
           key={movie.id}

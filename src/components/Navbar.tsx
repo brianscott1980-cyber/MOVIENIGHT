@@ -38,7 +38,7 @@ export function Navbar() {
               <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-red-600 flex items-center justify-center text-base shadow-md shadow-amber-500/20 group-hover:scale-105 transition">
                 🍿
               </div>
-              <span className="font-black text-white text-base sm:text-lg tracking-tight hidden min-[400px]:inline">
+              <span className="font-black text-white text-sm sm:text-lg tracking-tight inline">
                 MovieNight
               </span>
             </Link>

@@ -356,7 +356,7 @@ export default function ExploreSessionsPage() {
             </div>
             <div>
               <span className="font-black text-white text-base sm:text-lg tracking-tight">MovieNight</span>
-              <span className="text-[10px] text-amber-400 block -mt-1 font-semibold uppercase tracking-wider">
+              <span className="text-[10px] text-amber-400 hidden sm:block -mt-1 font-semibold uppercase tracking-wider">
                 Explore Sessions
               </span>
             </div>
@@ -368,7 +368,7 @@ export default function ExploreSessionsPage() {
               className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs sm:text-sm shadow-md transition active:scale-95 glow-gold"
             >
               <Plus className="w-4 h-4 stroke-[3]" />
-              <span>New Movie Night</span>
+              <span>New Vote</span>
             </button>
 
             {user ? (
@@ -434,15 +434,12 @@ export default function ExploreSessionsPage() {
           {/* Mentimeter-Style Quick Join Box */}
           <div className="w-full lg:w-auto shrink-0 self-stretch lg:self-center">
             <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-amber-500/30 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 shadow-xl max-w-md w-full">
-              <div className="flex items-center gap-2 mb-1.5">
+              <div className="flex items-center gap-2 mb-2 sm:mb-3">
                 <Hash className="w-4 h-4 text-amber-400" />
                 <span className="text-xs uppercase font-extrabold tracking-wider text-amber-300">
                   Join with 8-Digit Code
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 mb-3">
-                Enter the session code shown on the TV marquee or invitation
-              </p>
 
               <form onSubmit={handleJoinByCode} className="space-y-2.5">
                 <div className="relative">
@@ -502,11 +499,11 @@ export default function ExploreSessionsPage() {
           </div>
 
           {/* Filter Tabs */}
-          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-900 border border-slate-800 self-start sm:self-auto overflow-x-auto max-w-full">
+          <div className="w-full sm:w-auto flex items-center gap-1.5 p-1 rounded-xl bg-slate-900 border border-slate-800 overflow-x-auto max-w-full">
             {/* 1. All */}
             <button
               onClick={() => setFilterTab('all')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 ${
+              className={`flex-1 sm:flex-initial text-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 ${
                 filterTab === 'all'
                   ? 'bg-amber-400 text-slate-950 shadow-sm'
                   : 'text-slate-400 hover:text-white'
@@ -519,7 +516,7 @@ export default function ExploreSessionsPage() {
             {user && (
               <button
                 onClick={() => setFilterTab('hosts')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shrink-0 ${
+                className={`flex-1 sm:flex-initial text-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shrink-0 ${
                   filterTab === 'hosts'
                     ? 'bg-amber-400 text-slate-950 shadow-sm'
                     : 'text-slate-400 hover:text-white'
@@ -533,7 +530,7 @@ export default function ExploreSessionsPage() {
             {/* 3. Crowned */}
             <button
               onClick={() => setFilterTab('locked')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shrink-0 ${
+              className={`flex-1 sm:flex-initial text-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shrink-0 ${
                 filterTab === 'locked'
                   ? 'bg-red-500 text-white shadow-sm'
                   : 'text-slate-400 hover:text-red-400'
@@ -547,7 +544,7 @@ export default function ExploreSessionsPage() {
             {user && (
               <button
                 onClick={() => setFilterTab('setup')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shrink-0 ${
+                className={`flex-1 sm:flex-initial text-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shrink-0 ${
                   filterTab === 'setup'
                     ? 'bg-purple-600 text-white shadow-sm'
                     : 'text-slate-400 hover:text-purple-300'

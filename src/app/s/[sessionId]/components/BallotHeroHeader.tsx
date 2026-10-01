@@ -72,18 +72,13 @@ export function BallotHeroHeader({
                 {session.sessionTitle || `Movie Night #${sessionId}`}
               </span>
             </h1>
-            <p className="text-slate-400 text-sm sm:text-base mt-2.5 leading-relaxed">
-              {isLocked
-                ? 'Voting has ended for this movie night. Browse the contenders below or watch the official winner celebration on the live podium.'
-                : 'Browse our lineup of contender films. Watch trailers, check specs and streaming sources, and tap Vote on movies you want to watch tonight!'}
-            </p>
           </div>
 
-          {/* Quick Links */}
-          <div className="flex flex-wrap items-center gap-3 shrink-0">
+          {/* Quick Links - Share width on mobile */}
+          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 w-full md:w-auto">
             <Link
               href={`/s/${sessionId}/live`}
-              className="flex items-center gap-2.5 px-5 py-3 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-bold text-sm shadow-xl shadow-red-600/20 transition transform hover:-translate-y-0.5 glow-red"
+              className="flex-1 md:flex-initial flex items-center justify-center gap-2 sm:gap-2.5 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-bold text-xs sm:text-sm shadow-xl shadow-red-600/20 transition transform hover:-translate-y-0.5 glow-red"
             >
               <Tv className="w-4 h-4" />
               <span>Watch Live Podium</span>
@@ -91,7 +86,7 @@ export function BallotHeroHeader({
             {isHost && (
               <Link
                 href={`/s/${sessionId}/admin`}
-                className="flex items-center gap-2 px-4 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white font-semibold text-sm transition"
+                className="flex-1 md:flex-initial flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white font-semibold text-xs sm:text-sm transition"
               >
                 <Settings className="w-4 h-4 text-purple-400" />
                 <span>Session Setup</span>

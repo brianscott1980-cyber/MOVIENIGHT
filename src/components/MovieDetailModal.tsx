@@ -161,8 +161,8 @@ export function MovieDetailModal({ movie, autoPlay = false, onClose }: MovieDeta
         <div className="p-4 sm:p-7 space-y-4 sm:space-y-5 overflow-y-auto flex-1">
           {/* Header Info */}
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-            <div>
-              <div className="flex flex-wrap items-center gap-2 mb-2">
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2">
                 <span
                   className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${genreMeta.color}`}
                 >
@@ -229,10 +229,10 @@ export function MovieDetailModal({ movie, autoPlay = false, onClose }: MovieDeta
             <Link
               href={`/movie/${movie.id}?play=1`}
               onClick={onClose}
-              className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-amber-300 transition py-1 px-2.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-950/40 self-start shrink-0"
+              className="inline-flex items-center justify-center gap-1 text-xs text-slate-300 hover:text-white transition py-2 px-3 rounded-xl border border-slate-700 bg-slate-800/60 w-full sm:w-auto shrink-0 font-medium"
             >
-              <span>Full Page</span>
-              <ExternalLink className="w-3 h-3" />
+              <span>View Full Page</span>
+              <ExternalLink className="w-3.5 h-3.5" />
             </Link>
           </div>
 

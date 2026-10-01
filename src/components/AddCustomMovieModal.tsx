@@ -130,9 +130,9 @@ function MovieForm({ onClose, onMovieAdded, sessionId, addedByVoterId }: Props) 
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
-      <div role="dialog" aria-modal="true" aria-labelledby="add-movie-title" className="relative w-full max-w-2xl max-h-[90dvh] overflow-y-auto rounded-3xl border border-slate-800 bg-slate-900 p-6 sm:p-8 shadow-2xl">
-        <button type="button" onClick={onClose} aria-label="Close add movie" className="absolute top-5 right-5 p-2 text-slate-400 hover:text-white"><X className="w-5 h-5" /></button>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-2 sm:p-4 bg-slate-950/85 backdrop-blur-md">
+      <div role="dialog" aria-modal="true" aria-labelledby="add-movie-title" className="relative w-full max-w-2xl max-h-[92dvh] overflow-y-auto rounded-t-3xl sm:rounded-3xl border border-slate-800 bg-slate-900 p-4 sm:p-8 shadow-2xl">
+        <button type="button" onClick={onClose} aria-label="Close add movie" className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white"><X className="w-5 h-5" /></button>
         <h2 id="add-movie-title" className="text-2xl font-black text-white pr-8">{manual ? 'Add Movie Manually' : 'Find a Movie'}</h2>
         <p className="text-sm text-slate-400 mt-2">{manual ? 'Enter the details yourself when a movie cannot be found.' : 'Search by title, choose your movie, and we’ll fill in the details.'}</p>
         <button type="button" onClick={toggleMode} disabled={isSubmitting} className="text-xs text-amber-400 underline my-4">{manual ? 'Back to movie search' : 'Can’t find it? Add manually'}</button>
@@ -343,11 +343,11 @@ function MovieForm({ onClose, onMovieAdded, sessionId, addedByVoterId }: Props) 
               })}
             </div>
           </div>
-
           </>}
-          <div className="pt-4 flex justify-end gap-3 border-t border-slate-800">
-            <button type="button" onClick={onClose} className="px-4 py-2.5 text-slate-400 text-xs font-bold">Cancel</button>
-            <button type="submit" disabled={isSubmitting || importing || !title.trim() || (!manual && !selected)} className="px-5 py-2.5 rounded-xl bg-amber-400 text-slate-950 font-bold text-sm flex gap-2 items-center disabled:opacity-40"><Plus className="w-4 h-4" />{isSubmitting ? 'Adding…' : 'Add Movie to Lineup'}</button>
+
+          <div className="pt-4 flex flex-row items-center justify-end gap-2.5 sm:gap-3 border-t border-slate-800">
+            <button type="button" onClick={onClose} className="flex-1 sm:flex-initial px-4 py-2.5 text-slate-400 hover:text-white text-xs font-bold rounded-xl border border-slate-800 sm:border-transparent text-center">Cancel</button>
+            <button type="submit" disabled={isSubmitting || importing || !title.trim() || (!manual && !selected)} className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs sm:text-sm flex gap-2 items-center justify-center disabled:opacity-40 shadow-lg glow-gold"><Plus className="w-4 h-4" /><span>{isSubmitting ? 'Adding…' : 'Add Movie'}</span></button>
           </div>
         </form>
         <p className="mt-4 text-[10px] text-slate-500">Movie data and images from <a href="https://www.themoviedb.org" target="_blank" rel="noreferrer" className="underline">TMDB</a>. This product uses the TMDB API but is not endorsed or certified by TMDB.</p>

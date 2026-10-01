@@ -44,15 +44,15 @@ export function BallotFiltersBar({
 }: BallotFiltersBarProps) {
   return (
     <div className="flex flex-col gap-4 mb-8">
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3">
         {/* Search Input */}
-        <div className="relative flex-1 max-w-md">
+        <div className="relative flex-1 w-full sm:max-w-md">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by movie title, actor, or director..."
+            placeholder="Search title, actor, director..."
             className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition"
           />
           {searchQuery && (
@@ -65,12 +65,12 @@ export function BallotFiltersBar({
           )}
         </div>
 
-        {/* Sort Dropdown & Shuffle Button */}
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Sort Dropdown & Shuffle & Suggest Buttons - Sharing width on mobile */}
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <button
             type="button"
             onClick={onShuffle}
-            className={`inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold transition active:scale-95 border ${
+            className={`inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold transition active:scale-95 border shrink-0 ${
               sortBy === 'random'
                 ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-sm glow-gold'
                 : 'bg-slate-900 border-slate-800 text-slate-300 hover:text-amber-300 hover:border-amber-400/50'
@@ -78,20 +78,20 @@ export function BallotFiltersBar({
             title="Shuffle movie order randomly"
           >
             <Shuffle className="w-3.5 h-3.5" />
-            <span>Shuffle</span>
+            <span className="hidden min-[360px]:inline">Shuffle</span>
           </button>
 
           <ArrowUpDown className="w-4 h-4 text-slate-400 hidden sm:inline" />
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
-            className="bg-slate-900 border border-slate-800 text-xs text-white rounded-xl px-3 py-2.5 focus:outline-none focus:border-amber-400 transition"
+            className="flex-1 sm:flex-initial bg-slate-900 border border-slate-800 text-xs text-white rounded-xl px-2.5 sm:px-3 py-2.5 focus:outline-none focus:border-amber-400 transition truncate"
           >
-            <option value="random">🔀 Random (Default)</option>
-            <option value="imdb">⭐ Movie Rating</option>
-            <option value="year">📅 Release Year</option>
-            <option value="title">🔤 Title (A - Z)</option>
-            <option value="default">📜 Original Catalog</option>
+            <option value="random">🔀 Random</option>
+            <option value="imdb">⭐ Rating</option>
+            <option value="year">📅 Year</option>
+            <option value="title">🔤 Title</option>
+            <option value="default">📜 Catalog</option>
           </select>
 
           {movieAdditionMode === 'voter_suggestions' && (
@@ -99,7 +99,7 @@ export function BallotFiltersBar({
               type="button"
               onClick={() => currentVoter ? onOpenSuggestModal() : onOpenPicker()}
               disabled={suggestionLimitReached}
-              className={`inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-extrabold transition shadow-md active:scale-95 shrink-0 ${
+              className={`inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-extrabold transition shadow-md active:scale-95 shrink-0 ${
                 suggestionLimitReached
                   ? 'bg-slate-800 text-slate-500 border border-slate-700 opacity-50 cursor-not-allowed'
                   : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white'
