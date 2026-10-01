@@ -289,7 +289,13 @@ function buildSessionLaunchedHtml({
                   </span>
                 </div>
 
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="table-layout: fixed;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="table-layout: fixed; width: 100%;">
+                  <colgroup>
+                    <col width="25%" style="width: 25%;" />
+                    <col width="25%" style="width: 25%;" />
+                    <col width="25%" style="width: 25%;" />
+                    <col width="25%" style="width: 25%;" />
+                  </colgroup>
                   ${movieGridHtml}
                 </table>
               </div>
@@ -456,22 +462,24 @@ export async function sendSessionLaunchedEmail({
                   ? m.imdbRating.toFixed(1)
                   : null;
 
+              const displayTitle = m.title.length > 28 ? `${m.title.slice(0, 26)}…` : m.title;
+
               return `
-              <td width="25%" valign="top" style="padding: 4px; box-sizing: border-box; width: 25%;">
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #080b12; border: 1px solid #1e293b; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.35);">
+              <td width="25%" valign="top" style="width: 25%; max-width: 25%; min-width: 25%; padding: 4px; box-sizing: border-box; overflow: hidden;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="table-layout: fixed; width: 100%; max-width: 100%; background-color: #080b12; border: 1px solid #1e293b; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.35);">
                   <tr>
-                    <td style="padding: 0;">
+                    <td style="padding: 0; line-height: 0; background-color: #0f172a; overflow: hidden;">
                       <a href="${sessionUrl}" target="_blank" style="text-decoration: none; display: block;">
-                        <img src="${poster}" alt="${m.title}" width="130" style="width: 100%; height: auto; display: block; border-top-left-radius: 11px; border-top-right-radius: 11px; aspect-ratio: 2/3; object-fit: cover;" />
+                        <img src="${poster}" alt="${m.title}" width="130" style="width: 100%; max-width: 100%; height: auto; max-height: 180px; display: block; border-top-left-radius: 11px; border-top-right-radius: 11px; aspect-ratio: 2/3; object-fit: cover;" />
                       </a>
                     </td>
                   </tr>
                   <tr>
-                    <td style="padding: 8px 6px 10px; text-align: left;">
-                      <div style="color: #ffffff; font-size: 11px; font-weight: 800; line-height: 1.25; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${m.title}">
-                        ${m.title}
+                    <td style="padding: 7px 6px 8px; text-align: left; vertical-align: top;">
+                      <div style="color: #ffffff; font-size: 11px; font-weight: 800; line-height: 14px; height: 28px; max-height: 28px; margin-bottom: 3px; overflow: hidden; word-break: break-word;" title="${m.title}">
+                        ${displayTitle}
                       </div>
-                      <div style="font-size: 10px; color: #94a3b8; font-weight: 600;">
+                      <div style="font-size: 10px; color: #94a3b8; font-weight: 600; line-height: 12px; white-space: nowrap; overflow: hidden;">
                         <span>${m.year || ''}</span>
                         ${rating ? `<span style="color: #f59e0b; margin-left: 3px; font-weight: 700;">★${rating}</span>` : ''}
                       </div>
