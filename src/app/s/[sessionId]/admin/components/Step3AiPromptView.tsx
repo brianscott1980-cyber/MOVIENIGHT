@@ -49,7 +49,8 @@ export function Step3AiPromptView({
             <button
               type="button"
               onClick={onBackToChoice}
-              className="text-xs text-slate-400 hover:text-white flex items-center gap-1 transition"
+              disabled={isGeneratingAi}
+              className="text-xs text-slate-400 hover:text-white disabled:opacity-40 disabled:pointer-events-none flex items-center gap-1 transition"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back to choice</span>
@@ -58,7 +59,8 @@ export function Step3AiPromptView({
             <button
               type="button"
               onClick={onSwitchToSources}
-              className="text-xs text-amber-400 hover:underline transition"
+              disabled={isGeneratingAi}
+              className="text-xs text-amber-400 hover:underline disabled:opacity-40 disabled:pointer-events-none transition"
             >
               Switch to sources &amp; genres
             </button>
@@ -84,7 +86,8 @@ export function Step3AiPromptView({
             <button
               type="button"
               onClick={() => setAiPrompt(cleanTitle)}
-              className="text-xs px-3 py-1.5 rounded-xl border border-amber-500/70 bg-gradient-to-r from-amber-950/70 via-purple-950/50 to-amber-950/70 hover:border-amber-400 text-amber-200 hover:text-white transition active:scale-95 font-bold flex items-center gap-1.5 shadow-md glow-gold"
+              disabled={isGeneratingAi}
+              className="text-xs px-3 py-1.5 rounded-xl border border-amber-500/70 bg-gradient-to-r from-amber-950/70 via-purple-950/50 to-amber-950/70 hover:border-amber-400 disabled:opacity-40 disabled:pointer-events-none text-amber-200 hover:text-white transition active:scale-95 font-bold flex items-center gap-1.5 shadow-md glow-gold"
             >
               <span>🎯 Use Current Title:</span>
               <span className="font-extrabold text-white underline decoration-amber-400/60">
@@ -98,7 +101,8 @@ export function Step3AiPromptView({
               key={sample}
               type="button"
               onClick={() => setAiPrompt(sample.replace(/^[^\w\s]+\s*/, ''))}
-              className="text-xs px-3 py-1.5 rounded-xl border border-slate-800 bg-slate-950/80 hover:bg-purple-950/40 hover:border-purple-500/50 text-slate-300 hover:text-white transition active:scale-95"
+              disabled={isGeneratingAi}
+              className="text-xs px-3 py-1.5 rounded-xl border border-slate-800 bg-slate-950/80 hover:bg-purple-950/40 hover:border-purple-500/50 disabled:opacity-40 disabled:pointer-events-none text-slate-300 hover:text-white transition active:scale-95"
             >
               {sample}
             </button>
@@ -118,7 +122,7 @@ export function Step3AiPromptView({
           onChange={(e) => setAiPrompt(e.target.value)}
           placeholder="e.g. 90s action thrillers with suspenseful cat-and-mouse chases, like The Fugitive, Speed, and Heat..."
           disabled={isGeneratingAi}
-          className="w-full p-4 rounded-2xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 text-sm leading-relaxed"
+          className="w-full p-4 rounded-2xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 text-sm leading-relaxed disabled:opacity-50 disabled:cursor-not-allowed"
         />
       </div>
 
@@ -133,6 +137,8 @@ export function Step3AiPromptView({
               onClick={() => setAiMovieCount(cnt)}
               disabled={isGeneratingAi}
               className={`px-2.5 py-1 rounded-xl text-xs font-bold border transition ${
+                isGeneratingAi ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+              } ${
                 aiMovieCount === cnt
                   ? 'bg-purple-500 text-white border-purple-400 shadow-sm'
                   : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
@@ -148,7 +154,7 @@ export function Step3AiPromptView({
             type="button"
             onClick={onSwitchToSources}
             disabled={isGeneratingAi}
-            className="px-4 py-2.5 rounded-xl border border-slate-800 bg-slate-950 hover:bg-slate-800 text-slate-400 hover:text-white text-xs font-bold transition"
+            className="px-4 py-2.5 rounded-xl border border-slate-800 bg-slate-950 hover:bg-slate-800 text-slate-400 hover:text-white text-xs font-bold transition disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
           >
             Choose Sources &amp; Genres Instead
           </button>

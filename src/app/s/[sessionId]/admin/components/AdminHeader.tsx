@@ -13,6 +13,9 @@ import {
   Lock,
   Unlock,
   Rocket,
+  Pause,
+  Play,
+  Trash2,
 } from 'lucide-react';
 
 interface AdminHeaderProps {
@@ -92,7 +95,7 @@ export function AdminHeader({
               className="px-3 py-2 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-xs font-bold transition flex items-center gap-1.5"
             >
               {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" />}
-              <span>{copiedLink ? 'Link Copied!' : 'Share Link'}</span>
+              <span>{copiedLink ? 'Copied' : 'Share'}</span>
             </button>
           )}
 
@@ -102,7 +105,7 @@ export function AdminHeader({
               className="px-3 py-2 rounded-xl border border-rose-900/60 bg-rose-950/40 hover:bg-rose-900/50 text-rose-300 text-xs font-bold transition flex items-center justify-center gap-1.5 active:scale-95"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>Reset Ballots</span>
+              <span>Reset</span>
             </button>
           )}
 
@@ -114,12 +117,12 @@ export function AdminHeader({
             {saveSuccess ? (
               <>
                 <Check className="w-4 h-4 text-emerald-400" />
-                <span className="text-emerald-400">Saved!</span>
+                <span className="text-emerald-400">Saved</span>
               </>
             ) : (
               <>
                 <Save className="w-4 h-4" />
-                <span>{isSaving ? 'Saving...' : 'Save Settings'}</span>
+                <span>{isSaving ? 'Saving…' : 'Save'}</span>
               </>
             )}
           </button>
@@ -129,7 +132,8 @@ export function AdminHeader({
               onClick={onPauseSession}
               className="px-3.5 py-2 rounded-xl bg-orange-950/80 hover:bg-orange-900 text-orange-300 border border-orange-700/50 text-xs font-bold transition flex items-center justify-center gap-1.5 active:scale-95"
             >
-              <span>⏸️ Pause Voting</span>
+              <Pause className="w-3.5 h-3.5" />
+              <span>Pause</span>
             </button>
           )}
 
@@ -138,7 +142,8 @@ export function AdminHeader({
               onClick={onResumeSession}
               className="px-3.5 py-2 rounded-xl bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-700/50 text-xs font-bold transition flex items-center justify-center gap-1.5 active:scale-95"
             >
-              <span>▶️ Resume Voting</span>
+              <Play className="w-3.5 h-3.5" />
+              <span>Resume</span>
             </button>
           )}
 
@@ -149,7 +154,7 @@ export function AdminHeader({
               className="px-3.5 py-2 rounded-xl bg-purple-950/80 hover:bg-purple-900 text-purple-200 border border-purple-700/50 text-xs font-bold transition flex items-center justify-center gap-1.5 active:scale-95"
             >
               <Lock className="w-3.5 h-3.5" />
-              <span>{isClosingSession ? 'Closing...' : '🔒 Close Voting'}</span>
+              <span>{isClosingSession ? 'Closing…' : 'Close'}</span>
             </button>
           )}
 
@@ -160,7 +165,7 @@ export function AdminHeader({
               className="px-3.5 py-2 rounded-xl bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-700/50 text-xs font-bold transition flex items-center justify-center gap-1.5 active:scale-95"
             >
               <Unlock className="w-3.5 h-3.5" />
-              <span>{isReopeningSession ? 'Re-opening...' : '🔓 Re-open Voting'}</span>
+              <span>{isReopeningSession ? 'Re-opening…' : 'Re-open'}</span>
             </button>
           )}
 
@@ -168,7 +173,8 @@ export function AdminHeader({
             onClick={onDeleteSession}
             className="px-3 py-2 rounded-xl border border-red-900/80 bg-red-950 hover:bg-red-900 text-red-200 text-xs font-bold transition flex items-center justify-center gap-1.5 active:scale-95"
           >
-            <span>🗑️ Delete Session</span>
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>Delete</span>
           </button>
 
           {isSetupMode && (
@@ -187,7 +193,7 @@ export function AdminHeader({
               }`}
             >
               <Rocket className="w-4 h-4 stroke-[2.5]" />
-              <span>{isLaunching ? 'Starting...' : '🚀 Start Voting'}</span>
+              <span>{isLaunching ? 'Starting…' : 'Launch'}</span>
             </button>
           )}
         </div>
