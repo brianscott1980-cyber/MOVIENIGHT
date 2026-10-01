@@ -1,14 +1,11 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import {
   Share2,
   X,
-  Copy,
-  Check,
-  Send,
   ExternalLink,
-  MessageCircle,
+  Send,
 } from 'lucide-react';
 import { trackShareSession } from '@/lib/analytics';
 
@@ -27,18 +24,6 @@ export function ShareSessionModal({
   sessionTitle,
   isLocked = false,
 }: ShareSessionModalProps) {
-  const [copiedLink, setCopiedLink] = useState(false);
-  const [copiedCode, setCopiedCode] = useState(false);
-  const timerLink = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const timerCode = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (timerLink.current) clearTimeout(timerLink.current);
-      if (timerCode.current) clearTimeout(timerCode.current);
-    };
-  }, []);
-
   if (!isOpen) return null;
 
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
@@ -52,30 +37,6 @@ export function ShareSessionModal({
   const shareText = isLocked
     ? `🏆 Check out the crowned winner and results for ${displayTitle} on MovieNight! Code: ${formattedCode}`
     : `🍿 Cast your vote on our living room movie ballot for ${displayTitle}! Code: ${formattedCode}`;
-
-  const copyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(sessionUrl);
-      setCopiedLink(true);
-      trackShareSession({ sessionId, platform: 'copy_link' });
-      if (timerLink.current) clearTimeout(timerLink.current);
-      timerLink.current = setTimeout(() => setCopiedLink(false), 2000);
-    } catch {
-      // Fallback
-    }
-  };
-
-  const copyCode = async () => {
-    try {
-      await navigator.clipboard.writeText(sessionId);
-      setCopiedCode(true);
-      trackShareSession({ sessionId, platform: 'copy_code' });
-      if (timerCode.current) clearTimeout(timerCode.current);
-      timerCode.current = setTimeout(() => setCopiedCode(false), 2000);
-    } catch {
-      // Fallback
-    }
-  };
 
   const handleNativeShare = async () => {
     if (typeof navigator !== 'undefined' && navigator.share) {
@@ -92,16 +53,15 @@ export function ShareSessionModal({
     }
   };
 
-  // Social Share URLs
   const socialChannels = [
     {
       name: 'WhatsApp',
-      icon: (
-        <span className="text-emerald-400 font-bold text-lg">
-          💬
-        </span>
-      ),
-      bg: 'hover:bg-emerald-500/10 hover:border-emerald-500/30 text-emerald-300',
+      subtitle: 'Chat & Groups',
+      badge: 'Popular',
+      badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+      iconText: '💬',
+      iconBg: 'bg-emerald-950/80 border-emerald-500/40 text-emerald-400',
+      cardHover: 'hover:border-emerald-500/60 hover:bg-emerald-950/20 group-hover:scale-105',
       action: () => {
         trackShareSession({ sessionId, platform: 'whatsapp' });
         const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(`${shareText}\n\n${sessionUrl}`)}`;
@@ -110,12 +70,12 @@ export function ShareSessionModal({
     },
     {
       name: 'X (Twitter)',
-      icon: (
-        <span className="font-mono font-bold text-base text-white">
-          𝕏
-        </span>
-      ),
-      bg: 'hover:bg-slate-700/40 hover:border-slate-600 text-slate-200',
+      subtitle: 'Post to feed',
+      badge: 'Trending',
+      badgeColor: 'bg-slate-700/40 text-slate-200 border-slate-600',
+      iconText: '𝕏',
+      iconBg: 'bg-black border-slate-700 text-white',
+      cardHover: 'hover:border-slate-500 hover:bg-slate-800/40 group-hover:scale-105',
       action: () => {
         trackShareSession({ sessionId, platform: 'x' });
         const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(sessionUrl)}`;
@@ -124,10 +84,12 @@ export function ShareSessionModal({
     },
     {
       name: 'Telegram',
-      icon: (
-        <Send className="w-5 h-5 text-sky-400 shrink-0" />
-      ),
-      bg: 'hover:bg-sky-500/10 hover:border-sky-500/30 text-sky-300',
+      subtitle: 'Channel & Direct',
+      badge: null,
+      badgeColor: '',
+      iconNode: <Send className="w-5 h-5 text-sky-400" />,
+      iconBg: 'bg-sky-950/80 border-sky-500/40 text-sky-300',
+      cardHover: 'hover:border-sky-500/60 hover:bg-sky-950/20 group-hover:scale-105',
       action: () => {
         trackShareSession({ sessionId, platform: 'telegram' });
         const url = `https://t.me/share/url?url=${encodeURIComponent(sessionUrl)}&text=${encodeURIComponent(shareText)}`;
@@ -136,12 +98,12 @@ export function ShareSessionModal({
     },
     {
       name: 'Reddit',
-      icon: (
-        <span className="text-orange-400 font-bold text-lg">
-          🤖
-        </span>
-      ),
-      bg: 'hover:bg-orange-500/10 hover:border-orange-500/30 text-orange-300',
+      subtitle: 'Movie Communities',
+      badge: null,
+      badgeColor: '',
+      iconText: '🤖',
+      iconBg: 'bg-orange-950/80 border-orange-500/40 text-orange-400',
+      cardHover: 'hover:border-orange-500/60 hover:bg-orange-950/20 group-hover:scale-105',
       action: () => {
         trackShareSession({ sessionId, platform: 'reddit' });
         const url = `https://www.reddit.com/submit?url=${encodeURIComponent(sessionUrl)}&title=${encodeURIComponent(displayTitle)}`;
@@ -150,12 +112,12 @@ export function ShareSessionModal({
     },
     {
       name: 'Facebook',
-      icon: (
-        <span className="text-blue-500 font-bold text-lg">
-          f
-        </span>
-      ),
-      bg: 'hover:bg-blue-500/10 hover:border-blue-500/30 text-blue-300',
+      subtitle: 'Share to Story / Wall',
+      badge: null,
+      badgeColor: '',
+      iconText: 'f',
+      iconBg: 'bg-blue-950/80 border-blue-500/40 text-blue-400',
+      cardHover: 'hover:border-blue-500/60 hover:bg-blue-950/20 group-hover:scale-105',
       action: () => {
         trackShareSession({ sessionId, platform: 'facebook' });
         const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(sessionUrl)}`;
@@ -168,146 +130,116 @@ export function ShareSessionModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/85 backdrop-blur-md animate-fade-in"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-2xl space-y-6 text-white"
+        className="relative w-full max-w-lg rounded-3xl border-2 border-amber-500/30 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 p-6 sm:p-8 shadow-2xl shadow-amber-950/20 space-y-6 text-white"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
+        {/* Top Header */}
         <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
-              <Share2 className="w-5 h-5" />
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-rose-500 p-0.5 shadow-lg shadow-amber-500/20 shrink-0">
+              <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center text-amber-400">
+                <Share2 className="w-6 h-6" />
+              </div>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white tracking-tight">
-                Share Movie Night
+              <span className="text-[10px] font-black uppercase tracking-widest text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/25">
+                Boost Engagement
+              </span>
+              <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight mt-1">
+                Share to Socials
               </h3>
-              <p className="text-xs text-slate-400 line-clamp-1">
-                {displayTitle}
-              </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            aria-label="Close dialog"
+            className="p-2 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 transition"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Quick Link & Code Copies */}
-        <div className="space-y-3">
-          {/* Direct Link */}
-          <div className="rounded-2xl bg-slate-950 border border-slate-800 p-3 flex items-center justify-between gap-2">
-            <div className="min-w-0 flex-1">
-              <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">
-                Direct Invite Link
-              </div>
-              <div className="text-xs text-slate-300 font-mono truncate">
-                {sessionUrl}
-              </div>
-            </div>
-            <button
-              onClick={copyLink}
-              className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition ${
-                copiedLink
-                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-                  : 'bg-amber-400 hover:bg-amber-300 text-slate-950 glow-gold'
-              }`}
-            >
-              {copiedLink ? (
-                <>
-                  <Check className="w-3.5 h-3.5" />
-                  <span>Copied!</span>
-                </>
-              ) : (
-                <>
-                  <Copy className="w-3.5 h-3.5" />
-                  <span>Copy Link</span>
-                </>
-              )}
-            </button>
+        {/* Featured Session Spotlight Banner */}
+        <div className="rounded-2xl border border-slate-800 bg-slate-950/90 p-4 shadow-inner">
+          <div className="flex items-center justify-between gap-2 mb-1.5">
+            <span className="text-xs font-semibold text-slate-400">
+              Session Contenders &amp; Ballot
+            </span>
+            <span className="text-xs font-mono font-bold text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-lg">
+              #{formattedCode}
+            </span>
           </div>
-
-          {/* 8-Digit PIN Code */}
-          <div className="rounded-2xl bg-slate-950 border border-slate-800 p-3 flex items-center justify-between gap-2">
-            <div>
-              <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">
-                8-Digit Join Code
-              </div>
-              <div className="text-base font-black font-mono tracking-widest text-amber-300">
-                {formattedCode}
-              </div>
-            </div>
-            <button
-              onClick={copyCode}
-              className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${
-                copiedCode
-                  ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
-                  : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
-              }`}
-            >
-              {copiedCode ? (
-                <>
-                  <Check className="w-3.5 h-3.5" />
-                  <span>Copied!</span>
-                </>
-              ) : (
-                <>
-                  <Copy className="w-3.5 h-3.5" />
-                  <span>Copy Code</span>
-                </>
-              )}
-            </button>
+          <div className="text-base sm:text-lg font-black text-white line-clamp-1">
+            {displayTitle}
           </div>
+          <p className="text-xs text-slate-400 mt-1 line-clamp-2">
+            {shareText}
+          </p>
         </div>
 
-        {/* Native Mobile Share Button (if available) */}
-        {canNativeShare && (
-          <button
-            onClick={handleNativeShare}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-sm shadow-xl shadow-amber-500/20 transition active:scale-98 glow-gold"
-          >
-            <Share2 className="w-4 h-4" />
-            <span>Share via Phone / Apps...</span>
-          </button>
-        )}
-
-        {/* Social Share Channels Grid */}
-        <div>
-          <div className="text-xs font-semibold text-slate-400 mb-2.5">
-            Share directly on socials:
+        {/* Prominent Social Channels Grid */}
+        <div className="space-y-3">
+          <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            Choose Platform:
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {socialChannels.map((channel) => (
               <button
                 key={channel.name}
                 onClick={channel.action}
-                className={`flex items-center gap-2.5 p-2.5 rounded-2xl border border-slate-800/80 bg-slate-950/60 transition active:scale-95 text-left ${channel.bg}`}
+                className={`group relative flex items-center gap-3.5 p-3.5 rounded-2xl border border-slate-800/90 bg-slate-950/70 transition-all duration-200 active:scale-97 text-left shadow-lg ${channel.cardHover}`}
               >
-                <div className="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center shrink-0">
-                  {channel.icon}
+                <div
+                  className={`w-11 h-11 rounded-xl border flex items-center justify-center font-black text-xl shrink-0 transition-transform group-hover:scale-110 shadow-sm ${channel.iconBg}`}
+                >
+                  {channel.iconNode || channel.iconText}
                 </div>
-                <div className="min-w-0">
-                  <div className="text-xs font-bold leading-tight truncate">
-                    {channel.name}
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-bold text-white tracking-tight truncate">
+                      {channel.name}
+                    </span>
+                    {channel.badge && (
+                      <span
+                        className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md border ${channel.badgeColor}`}
+                      >
+                        {channel.badge}
+                      </span>
+                    )}
                   </div>
-                  <div className="text-[10px] text-slate-500 flex items-center gap-0.5">
-                    <span>Share</span>
-                    <ExternalLink className="w-2.5 h-2.5 inline" />
+                  <div className="text-[11px] text-slate-400 font-medium">
+                    {channel.subtitle}
                   </div>
                 </div>
+
+                <ExternalLink className="w-4 h-4 text-slate-600 group-hover:text-amber-400 transition shrink-0" />
               </button>
             ))}
           </div>
         </div>
 
-        {/* Footer Note */}
-        <p className="text-[11px] text-center text-slate-500">
-          Anyone with this link or code can view the session and cast their votes.
+        {/* Native Mobile Share Sheet Callout (Mobile/Tablet Only) */}
+        {canNativeShare && (
+          <div className="pt-1">
+            <button
+              onClick={handleNativeShare}
+              className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-sm shadow-xl shadow-amber-500/25 transition transform hover:-translate-y-0.5 active:scale-98 glow-gold"
+            >
+              <Share2 className="w-4 h-4" />
+              <span>More Share Options (Instagram, AirDrop, Messages)</span>
+            </button>
+          </div>
+        )}
+
+        {/* Footer info */}
+        <p className="text-[11px] text-center text-slate-500 pt-1">
+          Sharing opens the official platform composer with your session preview and voting invite.
         </p>
       </div>
     </div>
