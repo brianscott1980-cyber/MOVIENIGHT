@@ -210,11 +210,8 @@ export async function sendSessionLaunchedEmail({
 
     const origin = getAppOrigin();
     const sessionUrl = `${origin}/s/${encodeURIComponent(session.sessionId)}`;
-    const liveUrl = `${origin}/s/${encodeURIComponent(session.sessionId)}/live`;
     const formattedCode = formatCode(session.sessionId);
     const sessionTitle = session.sessionTitle || `Movie Night ${session.sessionId}`;
-    const hostName = session.creatorName || hostEmail?.split('@')[0] || 'A Host';
-    const hostAvatar = session.creatorAvatar || '🎬';
 
     // Retrieve full movie lineup if not passed directly
     let movieContenders = contenders && contenders.length > 0 ? contenders : [];
@@ -226,7 +223,7 @@ export async function sendSessionLaunchedEmail({
           const activeIds = new Set(session.activeMovieIds || []);
           movieContenders = sessionData.allAvailableMovies.filter((m) => activeIds.has(m.id));
           if (movieContenders.length === 0) {
-            movieContenders = sessionData.allAvailableMovies.slice(0, 6);
+            movieContenders = sessionData.allAvailableMovies;
           }
         }
       } catch (err) {
@@ -240,12 +237,6 @@ export async function sendSessionLaunchedEmail({
 
     const movieCount = session.activeMovieIds?.length || movieContenders.length;
 
-    // Rules breakdown
-    const votesRule = session.maxVotesPerVoter ? `Up to ${session.maxVotesPerVoter} votes/person` : 'Unlimited votes';
-    const weightRule = session.voteWeightMode === 'ranked' ? 'First-choice tiebreaker' : 'Equal weighting';
-    const privacyRule = session.isPublic === false ? 'Secret ballot' : 'Live podium';
-    const rulesSummary = `${votesRule} • ${weightRule} • ${privacyRule}`;
-
     // One-sentence introduction
     const oneSentenceIntro = session.aiPrompt
       ? `You've been invited to vote on tonight's lineup based on the theme &ldquo;${session.aiPrompt}&rdquo;.`
@@ -257,11 +248,10 @@ export async function sendSessionLaunchedEmail({
     const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(sessionUrl)}&text=${encodeURIComponent(shareText)}`;
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(sessionUrl)}`;
 
-    // Build movie poster grid (up to 6 posters in rows of 3)
-    const displayMovies = movieContenders.slice(0, 6);
+    // Build movie poster grid: ALL contender movies included, up to 4x per row, equal widths
     const movieRows: Movie[][] = [];
-    for (let i = 0; i < displayMovies.length; i += 3) {
-      movieRows.push(displayMovies.slice(i, i + 3));
+    for (let i = 0; i < movieContenders.length; i += 4) {
+      movieRows.push(movieContenders.slice(i, i + 4));
     }
 
     const movieGridHtml = movieRows
@@ -271,35 +261,35 @@ export async function sendSessionLaunchedEmail({
             .map((m) => {
               const poster = m.posterUrl?.startsWith('http')
                 ? m.posterUrl
-                : `${origin}${m.posterUrl || '/movie-placeholder.svg'}`;
+                : m.posterUrl
+                ? `${origin}${m.posterUrl}`
+                : 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500&auto=format&fit=crop&q=80';
               const rating =
                 m.tmdbRating != null
                   ? m.tmdbRating.toFixed(1)
                   : m.imdbRating != null
                   ? m.imdbRating.toFixed(1)
                   : null;
-              const genre = m.genre || (m as any).genres?.[0] || '';
 
               return `
-              <td width="33.33%" valign="top" style="padding: 6px; box-sizing: border-box;">
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #080b12; border: 1px solid #1e293b; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.4);">
+              <td width="25%" valign="top" style="padding: 4px; box-sizing: border-box; width: 25%;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #080b12; border: 1px solid #1e293b; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.35);">
                   <tr>
                     <td style="padding: 0;">
                       <a href="${sessionUrl}" target="_blank" style="text-decoration: none; display: block;">
-                        <img src="${poster}" alt="${m.title}" width="160" style="width: 100%; height: auto; display: block; border-top-left-radius: 13px; border-top-right-radius: 13px; aspect-ratio: 2/3; object-fit: cover;" />
+                        <img src="${poster}" alt="${m.title}" width="130" style="width: 100%; height: auto; display: block; border-top-left-radius: 11px; border-top-right-radius: 11px; aspect-ratio: 2/3; object-fit: cover;" />
                       </a>
                     </td>
                   </tr>
                   <tr>
-                    <td style="padding: 10px 8px 12px;">
-                      <div style="color: #ffffff; font-size: 13px; font-weight: 800; line-height: 1.3; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <td style="padding: 8px 6px 10px; text-align: left;">
+                      <div style="color: #ffffff; font-size: 11px; font-weight: 800; line-height: 1.25; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${m.title}">
                         ${m.title}
                       </div>
-                      <div style="font-size: 11px; color: #94a3b8; font-weight: 600;">
+                      <div style="font-size: 10px; color: #94a3b8; font-weight: 600;">
                         <span>${m.year || ''}</span>
-                        ${rating ? `<span style="color: #f59e0b; margin-left: 6px; font-weight: 700;">★ ${rating}</span>` : ''}
+                        ${rating ? `<span style="color: #f59e0b; margin-left: 3px; font-weight: 700;">★${rating}</span>` : ''}
                       </div>
-                      ${genre ? `<div style="font-size: 10px; color: #64748b; margin-top: 4px; text-transform: uppercase; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${genre}</div>` : ''}
                     </td>
                   </tr>
                 </table>
@@ -307,23 +297,12 @@ export async function sendSessionLaunchedEmail({
             `;
             })
             .join('')}
-          ${row.length < 3 ? `<td width="${(3 - row.length) * 33.33}%"></td>` : ''}
+          ${row.length < 4 ? `<td width="${(4 - row.length) * 25}%" style="width: ${(4 - row.length) * 25}%;"></td>` : ''}
         </tr>
       `)
       .join('');
 
-    const extraMoviesNotice =
-      movieCount > 6
-        ? `
-      <tr>
-        <td colspan="3" style="text-align: center; padding-top: 8px; color: #94a3b8; font-size: 12px; font-weight: 700;">
-          + ${movieCount - 6} more contender movies waiting on the ballot!
-        </td>
-      </tr>
-    `
-        : '';
-
-    console.info(`[Email] Sending rich session launched notification for session ${session.sessionId} to: ${recipients.join(', ')}`);
+    console.info(`[Email] Sending refined session launched notification for session ${session.sessionId} (${movieContenders.length} movies) to: ${recipients.join(', ')}`);
 
     const html = `
 <!DOCTYPE html>
@@ -331,55 +310,75 @@ export async function sendSessionLaunchedEmail({
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🍿 Voting Started: ${sessionTitle}</title>
+  <title>🍿 Cast Your Vote: ${sessionTitle}</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #080b12; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #f8fafc; -webkit-font-smoothing: antialiased;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #080b12; padding: 36px 12px;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #080b12; padding: 32px 12px;">
     <tr>
       <td align="center">
         <!-- Main Card Container -->
         <table role="presentation" width="100%" style="max-width: 620px; background-color: #0f172a; border: 1px solid #1e293b; border-radius: 24px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);">
           
-          <!-- Top Brand Header Banner -->
+          <!-- Top Header: MovieNight Icon + 2-Line Title Message + Start Voting Button -->
           <tr>
-            <td style="padding: 32px 28px 24px; background: linear-gradient(180deg, rgba(245, 158, 11, 0.22) 0%, rgba(15, 23, 42, 0) 100%); text-align: center;">
-              
-              <!-- Popcorn Brand Badge -->
-              <div style="display: inline-block; width: 64px; height: 64px; line-height: 64px; border-radius: 20px; background: linear-gradient(135deg, #f59e0b, #dc2626); font-size: 32px; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4); text-align: center;">
-                🍿
-              </div>
-
-              <!-- Brand Name -->
-              <div style="color: #ffffff; font-size: 14px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; margin-top: 12px;">
-                MovieNight
-              </div>
-
-              <!-- Status Badge -->
-              <div style="margin-top: 8px;">
-                <span style="display: inline-block; background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; padding: 4px 12px; border-radius: 9999px;">
-                  🟢 Voting Is Live
-                </span>
-              </div>
-
-              <!-- Main Title -->
-              <h1 style="color: #ffffff; font-size: 26px; font-weight: 900; margin: 14px 0 6px; letter-spacing: -0.5px; line-height: 1.25;">
-                Cast Your Vote for <br />
-                <span style="color: #fbbf24;">${sessionTitle}</span>
-              </h1>
+            <td style="padding: 28px 24px 22px; background: linear-gradient(180deg, rgba(245, 158, 11, 0.20) 0%, rgba(15, 23, 42, 0) 100%);">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                  <!-- Left: MovieNight Icon -->
+                  <td width="64" valign="middle" style="width: 64px; padding-right: 14px;">
+                    <div style="width: 56px; height: 56px; line-height: 56px; border-radius: 16px; background: linear-gradient(135deg, #f59e0b, #dc2626); font-size: 28px; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.35); text-align: center;">
+                      🍿
+                    </div>
+                  </td>
+                  <!-- Right: Message to cast vote for session name over 2 lines -->
+                  <td valign="middle" align="left">
+                    <div style="color: #cbd5e1; font-size: 15px; font-weight: 700; line-height: 1.25; margin-bottom: 3px; letter-spacing: -0.2px;">
+                      Cast your vote for
+                    </div>
+                    <div style="font-size: 24px; font-weight: 900; line-height: 1.2; letter-spacing: -0.5px; background: linear-gradient(90deg, #fbbf24 0%, #f87171 50%, #f43f5e 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; color: #fbbf24;">
+                      ${sessionTitle}
+                    </div>
+                  </td>
+                </tr>
+              </table>
 
               <!-- One-Sentence Introduction -->
-              <p style="color: #cbd5e1; font-size: 15px; margin: 8px 0 0; line-height: 1.5; font-weight: 500;">
+              <p style="color: #94a3b8; font-size: 13px; margin: 14px 0 0; line-height: 1.5; font-weight: 500;">
                 ${oneSentenceIntro}
               </p>
+
+              <!-- Start Voting Button Directly After Title Details -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top: 18px;">
+                <tr>
+                  <td align="center">
+                    <a href="${sessionUrl}" target="_blank" style="display: block; width: 100%; box-sizing: border-box; background: linear-gradient(135deg, #f59e0b, #d97706); color: #080b12; font-size: 16px; font-weight: 900; text-decoration: none; padding: 15px 24px; border-radius: 14px; text-align: center; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.35); letter-spacing: 0.3px;">
+                      Start Voting &rarr;
+                    </a>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
 
           <!-- Content Body -->
           <tr>
-            <td style="padding: 0 28px 28px;">
+            <td style="padding: 12px 24px 28px;">
+
+              <!-- Movie Posters Selection Showcase (All Contenders, 4x per row, equal width) -->
+              <div style="margin-bottom: 24px;">
+                <div style="margin-bottom: 12px;">
+                  <span style="color: #cbd5e1; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px;">
+                    🍿 Contender Lineup (${movieCount} Movies)
+                  </span>
+                </div>
+
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="table-layout: fixed;">
+                  ${movieGridHtml}
+                </table>
+              </div>
 
               <!-- Explanation: What is this voting session for? -->
-              <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(15, 23, 42, 0.8)); border: 1px solid rgba(245, 158, 11, 0.25); border-left: 4px solid #f59e0b; border-radius: 14px; padding: 16px 18px; margin-bottom: 22px; text-align: left;">
+              <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(15, 23, 42, 0.8)); border: 1px solid rgba(245, 158, 11, 0.25); border-left: 4px solid #f59e0b; border-radius: 14px; padding: 14px 16px; margin-bottom: 22px; text-align: left;">
                 <div style="font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.8px; color: #fbbf24; margin-bottom: 4px;">
                   🎬 What is this voting session for?
                 </div>
@@ -388,72 +387,8 @@ export async function sendSessionLaunchedEmail({
                 </div>
               </div>
 
-              <!-- Session Details Card -->
-              <div style="background-color: #080b12; border: 1px solid #1e293b; border-radius: 16px; padding: 18px 20px; margin-bottom: 26px;">
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                  <tr>
-                    <td style="color: #94a3b8; font-size: 13px; padding-bottom: 12px; font-weight: 600;">Session Code:</td>
-                    <td style="text-align: right; padding-bottom: 12px;">
-                      <span style="font-family: monospace; font-size: 16px; font-weight: 900; color: #fbbf24; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.35); padding: 4px 12px; border-radius: 8px; letter-spacing: 1px;">
-                        ${formattedCode}
-                      </span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="color: #94a3b8; font-size: 13px; padding-bottom: 12px; font-weight: 600;">Hosted By:</td>
-                    <td style="color: #ffffff; font-size: 14px; font-weight: 700; text-align: right; padding-bottom: 12px;">
-                      <span style="margin-right: 4px;">${hostAvatar}</span> ${hostName}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="color: #94a3b8; font-size: 13px; padding-bottom: 12px; font-weight: 600;">Voting Rules:</td>
-                    <td style="color: #e2e8f0; font-size: 13px; font-weight: 600; text-align: right; padding-bottom: 12px;">
-                      ${rulesSummary}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="color: #94a3b8; font-size: 13px; font-weight: 600;">Contender Lineup:</td>
-                    <td style="color: #ffffff; font-size: 14px; font-weight: 800; text-align: right;">
-                      ${movieCount} Movies
-                    </td>
-                  </tr>
-                </table>
-              </div>
-
-              <!-- Movie Posters Selection Showcase -->
-              <div style="margin-bottom: 26px;">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                  <span style="color: #ffffff; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px;">
-                    🍿 Contenders Lineup Showcase (${movieCount})
-                  </span>
-                </div>
-
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                  ${movieGridHtml}
-                  ${extraMoviesNotice}
-                </table>
-              </div>
-
-              <!-- Primary & Secondary Action Buttons -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 24px;">
-                <tr>
-                  <td align="center" style="padding-bottom: 10px;">
-                    <a href="${sessionUrl}" target="_blank" style="display: block; width: 100%; box-sizing: border-box; background: linear-gradient(135deg, #f59e0b, #d97706); color: #080b12; font-size: 15px; font-weight: 900; text-decoration: none; padding: 15px 24px; border-radius: 14px; text-align: center; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.35);">
-                      🗳️ Open Ballot &amp; Cast Votes &rarr;
-                    </a>
-                  </td>
-                </tr>
-                <tr>
-                  <td align="center">
-                    <a href="${liveUrl}" target="_blank" style="display: block; width: 100%; box-sizing: border-box; background-color: #1e293b; color: #cbd5e1; font-size: 13px; font-weight: 700; text-decoration: none; padding: 12px 24px; border-radius: 14px; text-align: center; border: 1px solid #334155;">
-                      📊 View Real-Time Live Podium &rarr;
-                    </a>
-                  </td>
-                </tr>
-              </table>
-
               <!-- Share Box Section -->
-              <div style="background-color: #080b12; border: 1px solid #1e293b; border-radius: 16px; padding: 18px 20px; text-align: center;">
+              <div style="background-color: #080b12; border: 1px solid #1e293b; border-radius: 16px; padding: 16px 18px; text-align: center;">
                 <div style="color: #cbd5e1; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px;">
                   📤 Share Invite With Friends
                 </div>
@@ -499,7 +434,7 @@ export async function sendSessionLaunchedEmail({
 
           <!-- Card Footer -->
           <tr>
-            <td style="padding: 20px 28px; border-top: 1px solid #1e293b; background-color: #0a0f1d; text-align: center; color: #64748b; font-size: 12px;">
+            <td style="padding: 18px 24px; border-top: 1px solid #1e293b; background-color: #0a0f1d; text-align: center; color: #64748b; font-size: 12px;">
               MovieNight &bull; Instant living room movie poll &bull; Session ${formattedCode}
             </td>
           </tr>
@@ -514,7 +449,7 @@ export async function sendSessionLaunchedEmail({
     const info = await transporter.sendMail({
       from: getSenderAddress(),
       to: recipients.join(', '),
-      subject: `🍿 Voting Live: ${sessionTitle} (Code: ${formattedCode})`,
+      subject: `🍿 Cast Your Vote: ${sessionTitle} (Code: ${formattedCode})`,
       html,
     });
     console.info(`[Email] Session launched notification sent successfully. MessageId: ${info.messageId}`);
