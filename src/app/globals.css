@@ -71,29 +71,28 @@ body {
 }
 
 /* HTML5 Dialog & Backdrop Standards */
-dialog {
-  margin: auto;
-  border: none;
-  padding: 0;
-  background: transparent;
-  color: inherit;
-  max-width: 100vw;
-  max-height: 100dvh;
-  outline: none;
-}
+@layer base {
+  dialog {
+    margin: auto;
+    color: inherit;
+    outline: none;
+  }
 
-dialog::backdrop {
-  background-color: rgba(2, 6, 23, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  dialog::backdrop {
+    background-color: rgba(2, 6, 23, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
 }
 
 @keyframes dialog-fade-in {
   from {
     opacity: 0;
+    transform: scale(0.96);
   }
   to {
     opacity: 1;
+    transform: scale(1);
   }
 }
 
