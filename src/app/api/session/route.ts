@@ -13,7 +13,6 @@ import {
   getHostPastVoters,
 } from '@/lib/storage';
 import { broadcaster } from '@/lib/broadcaster';
-import { sendSessionLaunchedEmail, sendSessionWinnerCrownedEmail } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -104,10 +103,6 @@ export async function POST(request: Request) {
       }
       data = await launchSession(sessionId);
       effectiveSessionId = data.session.sessionId;
-      // Asynchronously notify host and admin that voting has started (non-blocking)
-      if (data?.session) {
-        void sendSessionLaunchedEmail({ session: data.session });
-      }
     } else if (action === 'pause') {
       const { pauseSession } = await import('@/lib/storage');
       data = await pauseSession(sessionId);
@@ -145,19 +140,6 @@ export async function POST(request: Request) {
         status: 'locked',
         winnerMovieId: winnerId,
       });
-
-      // Asynchronously notify participants, host, and admin that winner was crowned (non-blocking)
-      if (data?.session) {
-        const crownedMovie =
-          data.leaderboard?.find((item) => item.movie.id === winnerId)?.movie ||
-          data.allAvailableMovies?.find((m) => m.id === winnerId) ||
-          null;
-        void sendSessionWinnerCrownedEmail({
-          session: data.session,
-          winnerMovie: crownedMovie,
-          leaderboard: data.leaderboard,
-        });
-      }
     } else if (action === 'unlock') {
       data = await updateSessionConfig(sessionId, {
         status: 'voting',
